@@ -4,7 +4,8 @@
   "description": "Discord bot that manages the Chaos Forces Alliance",
   "main": "index.js",
   "scripts": {
-    "start": "node deploy-commands && node ."
+    "start": "node deploy-commands && node .",
+    "test": "npm ci && node deploy-commands && pm2 start index.js && pm2 stop index.js"
   },
   "author": "AstroHWeston",
   "license": "ISC",

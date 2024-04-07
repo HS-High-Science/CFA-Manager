@@ -5,7 +5,7 @@ module.exports = {
         .setName('ping')
         .setDescription('Replies with the heart beat!'),
     async execute(interaction) {
-        const embed = new EmbedBuilder().setDescription("`Pinging...`").setColor("#3498db");
+        const embed = new EmbedBuilder().setDescription("`Pinging...`").setColor(Colors.Blue);
         const msg = await interaction.reply({ embeds: [embed], fetchReply: true });
         const timestamp = interaction.createdTimestamp;
         const latency = `\`\`\`ini\n[ ${Math.floor(msg.createdTimestamp - timestamp)}ms ]\`\`\``;
@@ -19,6 +19,6 @@ module.exports = {
             ])
             .setTimestamp()
             .setFooter({ text: "CFA Manager" });
-        msg.edit({ embeds: [embed] });
+        await msg.edit({ embeds: [embed] });
     }
-}
+};

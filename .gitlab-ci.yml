@@ -1,0 +1,19 @@
+image: node:latest
+
+stages:
+  - build
+
+compile:
+  stage: build
+  image: node:20
+  script:
+    - npm ci
+    - cp .env.example .env
+    - node deploy-commands.js
+    - npm run test
+  artifacts:
+    paths:
+      - node_modules
+  only:
+    - master
+    - merge_requests
