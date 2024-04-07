@@ -48,6 +48,4 @@ client.knex = knex({
     }
 });
 
-console.log(process.env.DISCORD_TOKEN);
-
-client.login("MTIyNjUzMDc0NTE0NTg4ODg0OQ.GUeV_G.aXtzN0Nba-1JJ8ZdxbQz6gEX5xspG4fV5p8XTo");
+client.login(process.env.DISCORD_TOKEN);
