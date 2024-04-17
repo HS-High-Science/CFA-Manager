@@ -51,6 +51,7 @@ module.exports = {
 
     async execute(interaction) {
         await interaction.deferReply({ ephemeral: true });
+        const client = await interaction.client;
         const allowedIDs = ["1208839121682833548"];
         if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
             await interaction.editReply({
@@ -73,7 +74,6 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
         const uuid = crypto.randomUUID();
         const trainingChannel = interaction.guild.channels.cache.get('1094324114245824694');
-        let response = null;
         switch (subcommand) {
             case 'schedule':
                 try {
@@ -108,6 +108,15 @@ Breaking any of these 2 rules can lead to a warning/strike.
 
                     await message.react('✅')
 
+                    await client.knex('trainings')
+                        .insert({
+                            training_id: uuid,
+                            host_username: interaction.member.nickname,
+                            message_id: message.id,
+                            training_date: time,
+                            is_concluded: false
+                        })
+
                     await interaction.editReply({
                         embeds:
                             [
@@ -127,23 +136,33 @@ Breaking any of these 2 rules can lead to a warning/strike.
                     });
                 } catch (err) {
                     console.log(err)
+                    await interaction.editReply({
+                        embeds:
+                            [
+                                new EmbedBuilder()
+                                    .setTitle('Error!')
+                                    .setDescription('There was an error while scheduling the training!')
+                                    .setColor(Colors.Red)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance.`,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                    })
                 }
-
                 break;
             case 'start':
-                const startID = interaction.options.getString('id');
-                response = `The training with ID ${startID} has been started!`;
+
                 break;
             case 'end':
-                const endID = interaction.options.getString('id');
-                response = `The training with ID ${endID} has been ended!`;
+
                 break;
             case 'cancel':
-                const cancelID = interaction.options.getString('id');
-                response = `The training with ID ${cancelID} has been cancelled!`;
+
                 break;
             default:
-                response = "Invalid subcommand!";
+
                 break;
         }
     }
