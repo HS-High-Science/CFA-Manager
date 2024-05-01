@@ -120,7 +120,7 @@ Breaking any of these 2 rules can lead to a warning/strike.
                         })
                     const message = await trainingChannel.send({
                         allowedMentions: { parse: ["roles"] },
-                        content: "<@&1226408360551645254>",
+                        content: "<@&1208467485104406619>",
                         embeds: [scheduleEmbed]
                     });
 
@@ -230,7 +230,7 @@ Breaking any of these 2 rules can lead to a warning/strike.
 
                     await trainingMsg.reply({
                         allowedMentions: {parse: ["roles"]},
-                        content: '<@&1226408360551645254>',
+                        content: '<@&1208467485104406619>',
                         embeds: [startEmbed]
                     })
                     await interaction.editReply({
@@ -326,7 +326,7 @@ If you didn't make it in time, **attend another training.**`)
 
                     await trainingMsg.reply({
                         allowedMentions: {parse: ["roles"]},
-                        content: '<@&1226408360551645254>',
+                        content: '<@&1208467485104406619>',
                         embeds: [startEmbed]
                     })
                     await interaction.editReply({
@@ -404,7 +404,7 @@ If you didn't make it in time, **attend another training.**`)
 
                     await msg.reply({
                         allowedMentions: {parse: ["roles"]},
-                        content: "<@&1226408360551645254>",
+                        content: "<@&1208467485104406619>",
                         embeds: [cancelEmbed]
                     });
 
