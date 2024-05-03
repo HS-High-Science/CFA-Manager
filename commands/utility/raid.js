@@ -254,6 +254,94 @@ module.exports = {
                 }
                 break;
             case 'cancel':
+                try {
+                    const result = await client.knex("raids")
+                        .select("*")
+                        .where("raid_id", raidID)
+
+                    if (result.length === 0) {
+                        await interaction.editReply({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setTitle('Error!')
+                                    .setDescription(`No raid with raid ID \`${raidID}\` has been found in the database`)
+                                    .setColor(Colors.Yellow)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance`,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                        })
+                        return;
+                    }
+                    const msgID = result.map((id) => id.message_id);
+                    const msg = await raidChannel.messages.fetch(`${msgID[0]}`)
+                    const cancelEmbed = new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setTitle('Raid Cancelled!')
+                        .setDescription(`The above raid has been cancelled.
+                    We sincerely apologize for any inconvenience that this might have caused.`)
+                        .addFields({
+                            name: "Reason",
+                            value: interaction.options.getString("reason")
+                        })
+                        .setFooter({
+                            text: `Chaos Forces Alliance`,
+                            iconURL: interaction.guild.iconURL()
+                        })
+                        .setTimestamp()
+
+                    await msg.reply({
+                        allowedMentions: { parse: ["roles"] },
+                        content: "<@&846692755496763413>",
+                        embeds: [cancelEmbed]
+                    });
+
+                    await client.knex("raids")
+                        .select("*")
+                        .where("raid_id", raidID)
+                        .del()
+
+                    await interaction.editReply({
+                        embeds:
+                            [
+                                new EmbedBuilder()
+                                    .setTitle('Raid Cancelled!')
+                                    .setDescription(`The raid has been successfully cancelled!`)
+                                    .addFields(
+                                        {
+                                            name: "Raid ID",
+                                            value: `\`\`\`ini\n[ ${uuid} ] \`\`\``,
+                                            inline: true
+                                        }
+                                    )
+                                    .setColor(Colors.Green)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance`,
+                                        iconURL: interaction.user.avatarURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                    });
+
+                } catch (error) {
+                    console.log(error);
+                    await interaction.editReply({
+                        embeds:
+                            [
+                                new EmbedBuilder()
+                                    .setTitle('Error!')
+                                    .setDescription('There was an error while cancelling the raid! If the issue persists, please contact AstroHWeston.')
+                                    .setColor(Colors.Red)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance`,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                    })
+                }
                 break;
         }
     }
