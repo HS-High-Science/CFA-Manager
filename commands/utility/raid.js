@@ -80,7 +80,7 @@ module.exports = {
                     const scheduleEmbed = new EmbedBuilder()
                         .setTitle('Incoming Raid Announcement')
                         .setColor("#2B2D31")
-                        .setDescription(`A raid has been scheduled for the **<t:${time}:f>**. Before joining at the designated time, please review all the raid rules listed below. Once done, kindly react to the :white_check_mark: emoji to confirm your attendance. **Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the raid you reacted to. Breaking any of these 2 rules can lead to a warning/strike.** 
+                        .setDescription(`A raid has been scheduled on <t:${time}:f>. Before joining at the designated time, please review all the raid rules listed below. Once done, kindly react to the :white_check_mark: emoji to confirm your attendance. **Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the raid you reacted to. Breaking any of these 2 rules can lead to a warning/strike.** 
 
 **Raid Rules:**
 - Prior to joining, ensure that you have enough time available at least an hour before the raid begins. We request this to avoid last-minute cancellations within the final 10-30 minutes.
