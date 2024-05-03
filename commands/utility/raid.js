@@ -44,7 +44,7 @@ module.exports = {
             )
             .addStringOption(option => option
                 .setName('reason')
-                .setDescription('The reason for cancelling the training')
+                .setDescription('The reason for cancelling the raid')
                 .setRequired(true)
             )
         ),
@@ -114,7 +114,7 @@ module.exports = {
                             [
                                 new EmbedBuilder()
                                     .setTitle('Raid Scheduled!')
-                                    .setDescription(`The training has been successfully scheduled!`)
+                                    .setDescription(`The raid has been successfully scheduled!`)
                                     .addFields(
                                         {
                                             name: "Training ID",
@@ -137,7 +137,7 @@ module.exports = {
                             [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
-                                    .setDescription('There was an arror while scheduling the training!')
+                                    .setDescription('There was an arror while scheduling the raid!')
                                     .setColor(Colors.Red)
                                     .setFooter({
                                         text: `Chaos Forces Alliance`,
