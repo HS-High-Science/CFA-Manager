@@ -1,7 +1,6 @@
 // Made by @Danonienko
 
 const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
-const training = require('./training');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -52,7 +51,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply({ ephemeral: true });
         const client = await interaction.client;
-        const raidID = interaction.option.getString('id');
+        //const raidID = interaction.option.getString('id');
         const allowedIDs = ["1157806062070681600", "846692755496763413"]
         if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
             await interaction.editReply({
@@ -89,7 +88,7 @@ module.exports = {
                         .setThumbnail(interaction.guild.iconURL())
                         .setTimestamp()
                         .setFooter({
-                            text: "Training ID: " + uuid,
+                            text: "Raid ID: " + uuid,
                             iconURL: interaction.user.avatarURL()
                         })
                     const message = await raidChannel.send({
@@ -102,10 +101,10 @@ module.exports = {
 
                     await client.knex('raids')
                         .insert({
-                            training_id: uuid,
+                            raid_id: uuid,
                             host_username: interaction.member.nickname,
                             message_id: message.id,
-                            training_date: time,
+                            raid_date: time,
                             is_concluded: false
                         })
 
@@ -117,7 +116,7 @@ module.exports = {
                                     .setDescription(`The raid has been successfully scheduled!`)
                                     .addFields(
                                         {
-                                            name: "Training ID",
+                                            name: "Raid ID",
                                             value: `\`\`\`ini\n[ ${uuid} ] \`\`\``,
                                             inline: true
                                         }
