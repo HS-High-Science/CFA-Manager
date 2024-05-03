@@ -313,7 +313,7 @@ module.exports = {
 
                     await msg.reply({
                         allowedMentions: { parse: ["roles"] },
-                        content: "<@&846692755496763413>",
+                        content: "<@&1094305864317419632>",
                         embeds: [cancelEmbed]
                     });
 
