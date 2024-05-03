@@ -417,8 +417,8 @@ If you didn't make it in time, **attend another training.**`)
                         embeds:
                             [
                                 new EmbedBuilder()
-                                    .setTitle('Training Locked!')
-                                    .setDescription(`The training has been successfully canceled!`)
+                                    .setTitle('Training cancelled!')
+                                    .setDescription(`The training has been successfully cancelled!`)
                                     .addFields(
                                         { name: "Training ID", value: `\`\`\`ini\n[ ${uuid} ] \`\`\``, inline: true }
                                     )
