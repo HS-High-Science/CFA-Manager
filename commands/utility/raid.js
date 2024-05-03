@@ -86,7 +86,7 @@ module.exports = {
 - Prior to joining, ensure that you have enough time available at least an hour before the raid begins. We request this to avoid last-minute cancellations within the final 10-30 minutes.
 - When you join, enter the Raiding tribune (you are not obligated to talk, but you must still be there to at least listen to your teammates). After that, STS on the Chaos Forces spawn and await intructions from the host.
 - During the raid, do NOT go AFK or/and leave without notifying the host. Otherwise you will be removed from the raid and will be punished when it ends. **Dont worry: disconnecting due to a WIFI/Electricity problem will not get you punished if you rejoin when you can and notify the host about that issue.**
-- Always listen to the orders of higher ranks. You can talk freely during the raid, but **please do not talk while host explains the plan.**
+- Always listen to the orders of higher ranks. You can talk freely during the raid, but **please do not talk while the host explains the plan.**
 - All CF rules apply to the raid, including the ban of any toxicity.`)
                         .setFields({
                             name: "Raid Scheduled By:",
