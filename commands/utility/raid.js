@@ -1,6 +1,6 @@
 // Made by @Danonienko
 
-const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, Colors, embedLength } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -51,7 +51,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply({ ephemeral: true });
         const client = await interaction.client;
-        //const raidID = interaction.option.getString('id');
+        const raidID = interaction.options.getString('id');
         const allowedIDs = ["1157806062070681600", "846692755496763413"]
         if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
             await interaction.editReply({
@@ -146,6 +146,107 @@ module.exports = {
                             ]
                     })
                 }
+                break;
+            case 'start':
+                try {
+                    const result = await client.knex("raids")
+                        .select("*")
+                        .where("raid_id", raidID)
+                    const isConcluded = result.map((id) => id.is_concluded);
+
+                    if (result.length === 0) {
+                        await interaction.editReply({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setTitle('Error!')
+                                    .setDescription(`No raid with raid ID \`${raidID}\` has been found in the database`)
+                                    .setColor(Colors.Yellow)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance`,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                        })
+                        return;
+                    }
+                    if (isConcluded[0] === 1) {
+                        await interaction.editReply({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setTitle('Error!')
+                                    .setDescription(`The raid with raid ID \`${raidID}\` has already been concluded`)
+                                    .setColor(Colors.Yellow)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance`,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                        })
+                        return;
+                    }
+                    const msgID = result.map((id) => id.message_id);
+                    const raidMsg = await raidChannel.messages.fetch(`${msgID[0]}`)
+
+                    const startEmbed = new EmbedBuilder()
+                        .setColor(Colors.DarkGreen)
+                        .setThumbnail(interaction.guild.iconURL())
+                        .setTitle(`Chaos Forces Alliance - Raid Commencing`)
+                        .setDescription(`A scheduled raid is now commencing. Please ensure that you:
+- STS at the spawn.
+- Have no avatar that massively alters your hitbox.
+- Remain quiet unless you're asking a question.`)
+                        .setTimestamp()
+                        .setFooter({
+                            text: `Raid ID: ${raidID}`,
+                            iconURL: interaction.user.avatarURL()
+                        })
+
+                    await raidMsg.reply({
+                        allowedMentions: { parse: ["roles"] },
+                        content: '<@&846692755496763413>',
+                        embeds: [startEmbed]
+                    })
+                    await interaction.editReply({
+                        embeds:
+                            [
+                                new EmbedBuilder()
+                                    .setTitle('Raid Started!')
+                                    .setDescription(`The raid has been successfully started!`)
+                                    .addFields(
+                                        {
+                                            name: "Raid ID",
+                                            value: `\`\`\`ini\n[ ${uuid} ] \`\`\``,
+                                            inline: true
+                                        }
+                                    )
+                                    .setColor(Colors.Green)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance`,
+                                        iconURL: interaction.user.avatarURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                    });
+                } catch (error) {
+                    console.log(error);
+                    await interaction.editReply({
+                        embeds: [
+                            new EmbedBuilder()
+                                .setTitle('Error!')
+                                .setDescription('There was an error while starting the raid!')
+                                .setColor(Colors.Red)
+                                .setFooter({
+                                    text: `Chaos Forces Alliance`,
+                                    iconURL: interaction.guild.iconURL()
+                                })
+                                .setTimestamp()
+                        ]
+                    })
+                }
+                break;
+            case 'cancel':
                 break;
         }
     }
