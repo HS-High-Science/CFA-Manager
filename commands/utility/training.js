@@ -386,6 +386,25 @@ If you didn't make it in time, **attend another training.**`)
                         })
                         return;
                     }
+
+                    const isConcluded = result.map((id) => id.is_concluded);
+                    if (isConcluded[0] === 1) {
+                        await interaction.editReply({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setTitle('Error!')
+                                    .setDescription(`You cannot cancel a concluded training`)
+                                    .setColor(Colors.Aqua)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance`,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                        })
+                        return;
+                    }
+
                     const msgID = result.map((id) => id.message_id);
                     const msg = await trainingChannel.messages.fetch(`${msgID[0]}`)
                     const cancelEmbed = new EmbedBuilder()
@@ -417,8 +436,8 @@ If you didn't make it in time, **attend another training.**`)
                         embeds:
                             [
                                 new EmbedBuilder()
-                                    .setTitle('Training Locked!')
-                                    .setDescription(`The training has been successfully canceled!`)
+                                    .setTitle('Training cancelled!')
+                                    .setDescription(`The training has been successfully cancelled!`)
                                     .addFields(
                                         { name: "Training ID", value: `\`\`\`ini\n[ ${uuid} ] \`\`\``, inline: true }
                                     )
@@ -527,7 +546,7 @@ If you didn't make it in time, **attend another training.**`)
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('Error!')
-                                .setDescription('There was an error while executing this command! If the issue persists, please contact Instructor AstroHWeston.')
+                                .setDescription('There was an error while executing this command! If the issue persists, please contact AstroHWeston.')
                                 .setThumbnail(failure)
                                 .setColor(Colors.Red)
                                 .setFooter({
