@@ -2,6 +2,7 @@ image: node:latest
 
 stages:
   - build
+  - run
 
 compile:
   stage: build
@@ -11,9 +12,14 @@ compile:
     - cp .env.example .env
     - node deploy-commands.js
     - npm run test
-  artifacts:
-    paths:
-      - node_modules
+  only:
+    - master
+    - merge_requests
+
+testrun:
+  stage: run
+  script:
+    - npm run test
   only:
     - master
     - merge_requests
