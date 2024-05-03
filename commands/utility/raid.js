@@ -82,7 +82,7 @@ module.exports = {
                         .setColor("#2B2D31")
                         .setDescription(`A raid has been scheduled on <t:${time}:f>. Before joining at the designated time, please review all the raid rules listed below. Once done, kindly react to the :white_check_mark: emoji to confirm your attendance. **Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the raid you reacted to. Breaking any of these 2 rules can lead to a warning/strike.** 
 
-**Raid Rules:**
+## Raid Rules
 - Prior to joining, ensure that you have enough time available at least an hour before the raid begins. We request this to avoid last-minute cancellations within the final 10-30 minutes.
 - When you join, enter the Raiding tribune (you are not obligated to talk, but you must still be there to at least listen to your teammates). After that, STS on the Chaos Forces spawn and await intructions from the host.
 - During the raid, do NOT go AFK or/and leave without notifying the host. Otherwise you will be expiled from the raid and will be punished when it ends. **Dont worry: disconnecting due to a WIFI/Electricity problem will not get you punished if you rejoin when you can and notify the host about that issue.**
