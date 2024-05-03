@@ -275,6 +275,25 @@ module.exports = {
                         })
                         return;
                     }
+
+                    const isConcluded = result.map((id) => id.is_concluded);
+                    if (isConcluded[0] === 1) {
+                        await interaction.editReply({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setTitle('Error!')
+                                    .setDescription(`You cannot cancel a concluded raid`)
+                                    .setColor(Colors.Aqua)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance`,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                        })
+                        return;
+                    }
+
                     const msgID = result.map((id) => id.message_id);
                     const msg = await raidChannel.messages.fetch(`${msgID[0]}`)
                     const cancelEmbed = new EmbedBuilder()
@@ -340,6 +359,93 @@ module.exports = {
                                     })
                                     .setTimestamp()
                             ]
+                    })
+                }
+                break;
+            case 'end':
+                try {
+                    const result = await client.knex("raids")
+                        .select("*")
+                        .where("raid_id", raidID)
+
+                    const isConcluded = result.map((id) => id.is_concluded);
+                    const msgID = result.map((id) => id.message_id);
+                    const msg = await raidChannel.messages.fetch(`${msgID[0]}`)
+
+                    if (result.length === 0) {
+                        await interaction.editReply({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setTitle('Error!')
+                                    .setDescription(`No raid with raid ID \`${raidID}\` found in the database.`)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance`,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                        })
+                    } else if (isConcluded[0] === 1) {
+                        await interaction.editReply({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setTitle('Error!')
+                                    .setDescription(`Raid \`${raidID}\` has already concluded`)
+                                    .setColor(Colors.Aqua)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance`,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                        })
+                    } else {
+                        const concludedEmbed = await new EmbedBuilder()
+                            .setColor(Colors.Blurple)
+                            .setTitle('Raid Concluded')
+                            .setDescription(`The above raid has been concluded`)
+                            .setTimestamp()
+                            .setFooter({
+                                text: `Chaos Forces Alliance`,
+                                iconURL: interaction.guild.iconURL()
+                            })
+
+                        await msg.reply({
+                            embeds: [concludedEmbed]
+                        })
+
+                        await client.knex("raids")
+                            .update({ is_concluded: true })
+                            .where({ raid_id: raidID })
+
+                        await interaction.editReply({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setTitle('Conclusion Success!')
+                                    .setDescription('Raid successfully concluded!')
+                                    .setColor(Colors.Green)
+                                    .setFooter({
+                                        text: `Chaos Forces Alliance`,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                        })
+                    }
+                } catch (error) {
+                    console.log(error)
+                    await interaction.editReply({
+                        embeds: [
+                            new EmbedBuilder()
+                                .setTitle('Error!')
+                                .setDescription('There was an error while executing this command! If the issue persists, please contact AstroHWeston.')
+                                .setColor(Colors.Red)
+                                .setFooter({
+                                    text: `Chaos Forces Alliance`,
+                                    iconURL: interaction.guild.iconURL()
+                                })
+                                .setTimestamp()
+                        ]
                     })
                 }
                 break;
