@@ -10,7 +10,6 @@ compile:
   script:
     - npm ci
     - cp .env.example .env
-    - node deploy-commands.js
     - npm run test
   only:
     - master

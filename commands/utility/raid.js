@@ -1,6 +1,7 @@
 // Made by @Danonienko
 
 const { SlashCommandBuilder, EmbedBuilder, Colors, embedLength } = require('discord.js');
+const { parse } = require('dotenv');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -53,6 +54,7 @@ module.exports = {
         const client = await interaction.client;
         const raidID = interaction.options.getString('id');
         const allowedIDs = ["1157806062070681600", "846692755496763413"]
+
         if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
             await interaction.editReply({
                 embeds:
@@ -70,13 +72,14 @@ module.exports = {
             })
             return;
         }
-        const subCommand = interaction.options.getSubcommand();
+        const subCommand = await interaction.options.getSubcommand();
         const uuid = crypto.randomUUID();
-        const raidChannel = interaction.guild.channels.cache.get('1235906938470928507');
+        const raidChannel = await interaction.guild.channels.cache.get('1116696712061394974');
+        const hspsRaidChannel = await client.channels.cache.get('1236400250516799648');
         switch (subCommand) {
             case 'schedule':
                 try {
-                    const time = interaction.options.getInteger('time');
+                    const time = await interaction.options.getInteger('time');
                     const scheduleEmbed = new EmbedBuilder()
                         .setTitle('Incoming Raid Announcement')
                         .setColor("#2B2D31")
@@ -98,6 +101,7 @@ module.exports = {
                             text: "Raid ID: " + uuid,
                             iconURL: interaction.user.avatarURL()
                         })
+
                     const message = await raidChannel.send({
                         allowedMentions: { parse: ["roles"] },
                         content: "<@&1094305864317419632>",
@@ -106,11 +110,41 @@ module.exports = {
 
                     await message.react('✅')
 
+                    const hspsScheduleEmbed = new EmbedBuilder()
+                        .setTitle('Incoming Raid Announcement')
+                        .setColor('#2B2D31')
+                        .setDescription(`A raid has been scheduled on <t:${time}:f>. Before joining at the designated time, please review all the raid rules listed below. Once done, kindly react to the :white_check_mark: emoji to confirm your attendance. **Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the raid you reacted to. Breaking any of these 2 rules can lead to a warning/strike.**
+## Raid Rules
+- Prior to joining, ensure that you have enough time available at least an hour before the raid begins. We request this to avoid last-minute cancellations within the final 10-30 minutes.
+- When you join, STS at security spawn and await intructions from the host.
+- During the raid, do NOT go AFK or/and leave without notifying the host. Otherwise you will be removed from the raid and will be punished when it ends. **Dont worry: disconnecting due to a WIFI/Electricity problem will not get you punished if you rejoin when you can and notify the host about that issue.**
+- Always listen to the orders of higher ranks. You can talk freely during the raid, but **please do not talk while the host explains the plan.**
+- All HSPS rules apply to the raid.`)
+                        .setFields({
+                            name: "Raid Scheduled By:",
+                            value: `<@${interaction.user.id}>`
+                        })
+                        .setThumbnail(interaction.guild.iconURL())
+                        .setTimestamp()
+                        .setFooter({
+                            text: "Raid ID: " + uuid,
+                            iconURL: interaction.user.avatarURL()
+                        });
+
+                    const hspsMessage = await hspsRaidChannel.send({
+                        allowedMentions: { parse: ["roles"] },
+                        content: "<@&1236406967271166056>",
+                        embeds: [hspsScheduleEmbed]
+                    });
+
+                    await hspsMessage.react('✅')
+
                     await client.knex('raids')
                         .insert({
                             raid_id: uuid,
                             host_username: interaction.member.nickname,
-                            message_id: message.id,
+                            cfa_message_id: message.id,
+                            hsps_message_id: hspsMessage.id,
                             raid_date: time,
                             is_concluded: false
                         })
@@ -159,7 +193,7 @@ module.exports = {
                     const result = await client.knex("raids")
                         .select("*")
                         .where("raid_id", raidID)
-                    const isConcluded = result.map((id) => id.is_concluded);
+                    const isConcluded = await result.map((id) => id.is_concluded);
 
                     if (result.length === 0) {
                         await interaction.editReply({
@@ -193,7 +227,7 @@ module.exports = {
                         })
                         return;
                     }
-                    const msgID = result.map((id) => id.message_id);
+                    const msgID = await result.map((id) => id.cfa_message_id);
                     const raidMsg = await raidChannel.messages.fetch(`${msgID[0]}`)
 
                     const startEmbed = new EmbedBuilder()
@@ -215,6 +249,30 @@ module.exports = {
                         content: '<@&1094305864317419632>',
                         embeds: [startEmbed]
                     })
+
+                    const hspsMsgID = result.map((id) => id.hsps_message_id);
+                    const hspsRaidMsg = await hspsRaidChannel.messages.fetch(`${hspsMsgID[0]}`)
+
+                    const hspsStartEmbed = new EmbedBuilder()
+                        .setColor(Colors.DarkGreen)
+                        .setThumbnail(interaction.guild.iconURL())
+                        .setTitle(`Chaos Forces are Raiding the CPUF!`)
+                        .setDescription(`A scheduled raid is now commencing. Please ensure that you:
+- STS at the spawn.
+- Have no avatar that massively alters your hitbos.
+- Join the On-Duty VC.`)
+                        .setTimestamp()
+                        .setFooter({
+                            text: `Raid ID: ${raidID}`,
+                            iconURL: interaction.user.avatarURL()
+                        })
+
+                    await hspsRaidMsg.reply({
+                        allowedMentions: { parse: ["roles"] },
+                        content: '<@&1236406967271166056>',
+                        embeds: [hspsStartEmbed]
+                    })
+
                     await interaction.editReply({
                         embeds:
                             [
@@ -276,7 +334,7 @@ module.exports = {
                         return;
                     }
 
-                    const isConcluded = result.map((id) => id.is_concluded);
+                    const isConcluded = await result.map((id) => id.is_concluded);
                     if (isConcluded[0] === 1) {
                         await interaction.editReply({
                             embeds: [
@@ -294,7 +352,7 @@ module.exports = {
                         return;
                     }
 
-                    const msgID = result.map((id) => id.message_id);
+                    const msgID = await result.map((id) => id.cfa_message_id);
                     const msg = await raidChannel.messages.fetch(`${msgID[0]}`)
                     const cancelEmbed = new EmbedBuilder()
                         .setColor(Colors.Red)
@@ -315,6 +373,29 @@ module.exports = {
                         allowedMentions: { parse: ["roles"] },
                         content: "<@&1094305864317419632>",
                         embeds: [cancelEmbed]
+                    });
+
+                    const hspsMsgID = result.map((id) => id.hsps_message_id);
+                    const hspsMsg = await hspsRaidChannel.messages.fetch(`${hspsMsgID}`);
+                    const hspsCancelEmbed = new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setTitle('Raid Cancelled!')
+                        .setDescription(`The above raid has been cancelled.
+                        We sincerely apologize for any inconvenience that this might have caused.`)
+                        .addFields({
+                            name: "Reason",
+                            value: interaction.options.getString("reason")
+                        })
+                        .setFooter({
+                            text: `Chaos Forces Alliance`,
+                            iconURL: interaction.guild.iconURL()
+                        })
+                        .setTimestamp()
+
+                    await hspsRaidMsg.reply({
+                        allowedMentions: { parse: ["roles"] },
+                        content: "<@&1236406967271166056>",
+                        embeds: [hspsCancelEmbed]
                     });
 
                     await client.knex("raids")
@@ -368,9 +449,11 @@ module.exports = {
                         .select("*")
                         .where("raid_id", raidID)
 
-                    const isConcluded = result.map((id) => id.is_concluded);
-                    const msgID = result.map((id) => id.message_id);
+                    const isConcluded = await result.map((id) => id.is_concluded);
+                    const msgID = await result.map((id) => id.cfa_message_id);
                     const msg = await raidChannel.messages.fetch(`${msgID[0]}`)
+                    const hspsMsgID = await result.map((id) => id.hsps_message_id);
+                    const hspsMsg = await hspsRaidChannel.messages.fetch(`${hspsMsgID[0]}`)
 
                     if (result.length === 0) {
                         await interaction.editReply({
@@ -400,7 +483,7 @@ module.exports = {
                             ]
                         })
                     } else {
-                        const concludedEmbed = await new EmbedBuilder()
+                        const concludedEmbed = new EmbedBuilder()
                             .setColor(Colors.Blurple)
                             .setTitle('Raid Concluded')
                             .setDescription(`The above raid has been concluded`)
@@ -411,6 +494,10 @@ module.exports = {
                             })
 
                         await msg.reply({
+                            embeds: [concludedEmbed]
+                        })
+
+                        await hspsMsg.reply({
                             embeds: [concludedEmbed]
                         })
 
