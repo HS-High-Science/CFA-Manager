@@ -38,13 +38,13 @@ for (const file of eventFiles) {
 }
 
 client.knex = knex({
-    client: 'mysql2',
+    client: process.env.DB_CLIENT,
     connection: {
-        host : '192.158.233.195',
-        port : 8520,
-        user : 'root',
-        password : 'AstroHW',
-        database : 'cfa'
+        host : process.env.DB_HOST,
+        port : process.env.DB_PORT,
+        user : process.env.DB_USER,
+        password : process.env.DB_PASSWORD,
+        database : process.env.DB_NAME
     }
 });
 
