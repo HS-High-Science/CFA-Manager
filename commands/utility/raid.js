@@ -75,7 +75,7 @@ module.exports = {
         const subCommand = await interaction.options.getSubcommand();
         const uuid = crypto.randomUUID();
         const raidChannel = await interaction.guild.channels.cache.get('1116696712061394974');
-        const hspsRaidChannel = await client.channels.cache.get('1236400250516799648');
+        const hspsRaidChannel = await client.channels.cache.get('1055486389250162779');
         switch (subCommand) {
             case 'schedule':
                 try {
@@ -133,7 +133,7 @@ module.exports = {
 
                     const hspsMessage = await hspsRaidChannel.send({
                         allowedMentions: { parse: ["roles"] },
-                        content: "<@&1236406967271166056>",
+                        content: "<@&1233351676186853407>",
                         embeds: [hspsScheduleEmbed]
                     });
 
