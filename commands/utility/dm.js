@@ -16,7 +16,7 @@ module.exports = {
         )
         .addNumberOption(option => option
             .setName('userid')
-            .setDescription('The ID of the user you want to DM. Allows you to DM a user who is not in THIS server, only works if bot is inside the server the user is in.')
+            .setDescription('The ID of the user you want to DM.')
             .setRequired(false)
         )
         .addAttachmentOption(option => option
