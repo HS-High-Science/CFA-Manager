@@ -79,6 +79,16 @@ module.exports = {
         switch (subCommand) {
             case 'schedule':
                 try {
+                    await client.knex('raids')
+                    .insert({
+                        raid_id: uuid,
+                        host_username: interaction.member.nickname,
+                        cfa_message_id: message.id,
+                        hsps_message_id: hspsMessage.id,
+                        raid_date: time,
+                        is_concluded: false
+                    })
+
                     const time = await interaction.options.getInteger('time');
                     const scheduleEmbed = new EmbedBuilder()
                         .setTitle('Incoming Raid Announcement')
@@ -138,16 +148,6 @@ module.exports = {
                     });
 
                     await hspsMessage.react('✅')
-
-                    await client.knex('raids')
-                        .insert({
-                            raid_id: uuid,
-                            host_username: interaction.member.nickname,
-                            cfa_message_id: message.id,
-                            hsps_message_id: hspsMessage.id,
-                            raid_date: time,
-                            is_concluded: false
-                        })
 
                     await interaction.editReply({
                         embeds:
