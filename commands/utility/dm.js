@@ -29,7 +29,7 @@ module.exports = {
         try {
             const allowedIDs = ["1226408360551645254", "427832787605782549", "1239137720669044766"]
             if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
-                interaction.defereditReply();
+                interaction.deferReply();
                 const user = interaction.options.getUser('user');
                 const message = interaction.options.getString('message');
                 const userid = interaction.options.getNumber('userid');
