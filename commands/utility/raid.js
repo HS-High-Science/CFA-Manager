@@ -33,6 +33,16 @@ module.exports = {
                 .setDescription('The ID of the raid that you want to end')
                 .setRequired(true)
             )
+            .addStringOption(option => option
+                .setName('winner')
+                .setDescription('Which side won the raid?')
+                .setRequired(true)
+                .setChoices(
+                    { name: 'Chaos Forces', value: 'chaos' },
+                    { name: 'High Science Private Security', value: 'security' },
+                    { name: 'Stalemate', value: 'stalemate' }
+                )
+            )
         )
         .addSubcommand(subCommand => subCommand
             .setName('cancel')
@@ -47,6 +57,15 @@ module.exports = {
                 .setDescription('The reason for cancelling the raid')
                 .setRequired(true)
             )
+        )
+        .addSubcommand(subCommand => subCommand
+            .setName('change-time')
+            .setDescription('Allows you to change the time of the raid')
+            .addIntegerOption(option => option
+                .setName('time')
+                .setDescription('New time for the raid')
+                .setRequired(true)
+            )
         ),
 
     async execute(interaction) {
@@ -56,7 +75,7 @@ module.exports = {
         const allowedIDs = ["1157806062070681600", "846692755496763413"]
 
         if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
-            await interaction.editReply({
+            return interaction.editReply({
                 embeds:
                     [
                         new EmbedBuilder()
@@ -70,7 +89,6 @@ module.exports = {
                             .setTimestamp()
                     ]
             })
-            return;
         }
         const subCommand = await interaction.options.getSubcommand();
         const uuid = crypto.randomUUID();
@@ -79,20 +97,11 @@ module.exports = {
         switch (subCommand) {
             case 'schedule':
                 try {
-                    await client.knex('raids')
-                    .insert({
-                        raid_id: uuid,
-                        host_username: interaction.member.nickname,
-                        cfa_message_id: message.id,
-                        hsps_message_id: hspsMessage.id,
-                        raid_date: time,
-                        is_concluded: false
-                    })
 
                     const time = await interaction.options.getInteger('time');
                     const scheduleEmbed = new EmbedBuilder()
-                        .setTitle('Incoming Raid Announcement')
-                        .setColor("#2B2D31")
+                        .setTitle('Chaos Forces Alliance Raid')
+                        .setColor(Colors.DarkButNotBlack)
                         .setDescription(`A raid has been scheduled on <t:${time}:f>. Before joining at the designated time, please review all the raid rules listed below. Once done, kindly react to the :white_check_mark: emoji to confirm your attendance. **Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the raid you reacted to. Breaking any of these 2 rules can lead to a warning/strike.** 
 
 ## Raid Rules
@@ -102,7 +111,7 @@ module.exports = {
 - Always listen to the orders of higher ranks. You can talk freely during the raid, but **please do not talk while the host explains the plan.**
 - All CF rules apply to the raid, including the ban of any toxicity.`)
                         .setFields({
-                            name: "Raid Scheduled By:",
+                            name: "Raid Scheduled By",
                             value: `<@${interaction.user.id}>`
                         })
                         .setThumbnail(interaction.guild.iconURL())
@@ -121,17 +130,13 @@ module.exports = {
                     await message.react('✅')
 
                     const hspsScheduleEmbed = new EmbedBuilder()
-                        .setTitle('Incoming Raid Announcement')
-                        .setColor('#2B2D31')
-                        .setDescription(`A raid has been scheduled on <t:${time}:f>. Before joining at the designated time, please review all the raid rules listed below. Once done, kindly react to the :white_check_mark: emoji to confirm your attendance. **Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the raid you reacted to. Breaking any of these 2 rules can lead to a warning/strike.**
-## Raid Rules
-- Prior to joining, ensure that you have enough time available at least an hour before the raid begins. We request this to avoid last-minute cancellations within the final 10-30 minutes.
-- When you join, STS at security spawn and await intructions from the host.
-- During the raid, do NOT go AFK or/and leave without notifying the host. Otherwise you will be removed from the raid and will be punished when it ends. **Dont worry: disconnecting due to a WIFI/Electricity problem will not get you punished if you rejoin when you can and notify the host about that issue.**
-- Always listen to the orders of higher ranks. You can talk freely during the raid, but **please do not talk while the host explains the plan.**
-- All HSPS rules apply to the raid.`)
+                        .setTitle('Chaos Forces Alliance Raid')
+                        .setColor(Colors.DarkButNotBlack)
+                        .setDescription(`The High Science Intelligence Agency has gotten information from our spies inside Chaos Forces Alliance that they are planning to raid the Classified Underground Facility on <t:${time}:f>
+
+High Science is requesting all available security to react with ✅ to confirm that you are going to deploy on the CPUF when raid commences and protect the facility at all cost.`)
                         .setFields({
-                            name: "Raid Scheduled By:",
+                            name: "Raid Scheduled By",
                             value: `<@${interaction.user.id}>`
                         })
                         .setThumbnail(interaction.guild.iconURL())
@@ -149,7 +154,18 @@ module.exports = {
 
                     await hspsMessage.react('✅')
 
-                    await interaction.editReply({
+
+                    await client.knex('raids')
+                        .insert({
+                            raid_id: uuid,
+                            host_username: interaction.member.nickname,
+                            cfa_message_id: message.id,
+                            hsps_message_id: hspsMessage.id,
+                            raid_date: time,
+                            is_concluded: false
+                        })
+
+                    return interaction.editReply({
                         embeds:
                             [
                                 new EmbedBuilder()
@@ -172,7 +188,7 @@ module.exports = {
                     });
                 } catch (error) {
                     console.log(error)
-                    await interaction.editReply({
+                    return interaction.editReply({
                         embeds:
                             [
                                 new EmbedBuilder()
@@ -187,7 +203,6 @@ module.exports = {
                             ]
                     })
                 }
-                break;
             case 'start':
                 try {
                     const result = await client.knex("raids")
@@ -196,7 +211,7 @@ module.exports = {
                     const isConcluded = await result.map((id) => id.is_concluded);
 
                     if (result.length === 0) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -209,10 +224,9 @@ module.exports = {
                                     .setTimestamp()
                             ]
                         })
-                        return;
                     }
                     if (isConcluded[0] === 1) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -225,7 +239,6 @@ module.exports = {
                                     .setTimestamp()
                             ]
                         })
-                        return;
                     }
                     const msgID = await result.map((id) => id.cfa_message_id);
                     const raidMsg = await raidChannel.messages.fetch(`${msgID[0]}`)
@@ -256,11 +269,8 @@ module.exports = {
                     const hspsStartEmbed = new EmbedBuilder()
                         .setColor(Colors.DarkGreen)
                         .setThumbnail(interaction.guild.iconURL())
-                        .setTitle(`Chaos Forces are Raiding the CPUF!`)
-                        .setDescription(`A scheduled raid is now commencing. Please ensure that you:
-- STS at the spawn.
-- Have no avatar that massively alters your hitbos.
-- Join the On-Duty VC.`)
+                        .setTitle(`🚨 CPUF IS UNDER ATTACK 🚨`)
+                        .setDescription(`Chaos Forces commenced a raid on Classified Part Underground Facility! \nAll available security are to immediately deploy and fight off the raid.`)
                         .setTimestamp()
                         .setFooter({
                             text: `Raid ID: ${raidID}`,
@@ -269,11 +279,11 @@ module.exports = {
 
                     await hspsRaidMsg.reply({
                         allowedMentions: { parse: ["roles"] },
-                        content: '<@&1236406967271166056>',
+                        content: '<@&1233351676186853407>',
                         embeds: [hspsStartEmbed]
                     })
 
-                    await interaction.editReply({
+                    return interaction.editReply({
                         embeds:
                             [
                                 new EmbedBuilder()
@@ -296,7 +306,7 @@ module.exports = {
                     });
                 } catch (error) {
                     console.log(error);
-                    await interaction.editReply({
+                    return interaction.editReply({
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('Error!')
@@ -310,7 +320,6 @@ module.exports = {
                         ]
                     })
                 }
-                break;
             case 'cancel':
                 try {
                     const result = await client.knex("raids")
@@ -318,7 +327,7 @@ module.exports = {
                         .where("raid_id", raidID)
 
                     if (result.length === 0) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -331,12 +340,11 @@ module.exports = {
                                     .setTimestamp()
                             ]
                         })
-                        return;
                     }
 
                     const isConcluded = await result.map((id) => id.is_concluded);
                     if (isConcluded[0] === 1) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -349,7 +357,6 @@ module.exports = {
                                     .setTimestamp()
                             ]
                         })
-                        return;
                     }
 
                     const msgID = await result.map((id) => id.cfa_message_id);
@@ -380,8 +387,7 @@ module.exports = {
                     const hspsCancelEmbed = new EmbedBuilder()
                         .setColor(Colors.Red)
                         .setTitle('Raid Cancelled!')
-                        .setDescription(`The above raid has been cancelled.
-                        We sincerely apologize for any inconvenience that this might have caused.`)
+                        .setDescription(`The High Science Intelligence Agency have gotten new information that Chaos Forces have cancelled their planned raid. \n\nThe CPUF is safe, for now...`)
                         .addFields({
                             name: "Reason",
                             value: interaction.options.getString("reason")
@@ -392,9 +398,9 @@ module.exports = {
                         })
                         .setTimestamp()
 
-                    await hspsRaidMsg.reply({
+                    await hspsMsg.reply({
                         allowedMentions: { parse: ["roles"] },
-                        content: "<@&1236406967271166056>",
+                        content: "<@&1233351676186853407>",
                         embeds: [hspsCancelEmbed]
                     });
 
@@ -403,7 +409,7 @@ module.exports = {
                         .where("raid_id", raidID)
                         .del()
 
-                    await interaction.editReply({
+                    return interaction.editReply({
                         embeds:
                             [
                                 new EmbedBuilder()
@@ -427,7 +433,7 @@ module.exports = {
 
                 } catch (error) {
                     console.log(error);
-                    await interaction.editReply({
+                    return interaction.editReply({
                         embeds:
                             [
                                 new EmbedBuilder()
@@ -442,7 +448,6 @@ module.exports = {
                             ]
                     })
                 }
-                break;
             case 'end':
                 try {
                     const result = await client.knex("raids")
@@ -456,7 +461,7 @@ module.exports = {
                     const hspsMsg = await hspsRaidChannel.messages.fetch(`${hspsMsgID[0]}`)
 
                     if (result.length === 0) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -469,7 +474,7 @@ module.exports = {
                             ]
                         })
                     } else if (isConcluded[0] === 1) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -483,29 +488,126 @@ module.exports = {
                             ]
                         })
                     } else {
-                        const concludedEmbed = new EmbedBuilder()
-                            .setColor(Colors.Blurple)
-                            .setTitle('Raid Concluded')
-                            .setDescription(`The above raid has been concluded`)
-                            .setTimestamp()
-                            .setFooter({
-                                text: `Chaos Forces Alliance`,
-                                iconURL: interaction.guild.iconURL()
-                            })
+                        const winner = interaction.options.getString("winner");
 
-                        await msg.reply({
-                            embeds: [concludedEmbed]
-                        })
+                        switch (winner) {
+                            case 'chaos':
+                                await msg.reply({
+                                    allowedMentions: { parse: ["roles"] },
+                                    content: "<@&1094305864317419632>",
+                                    embeds:
+                                        [
+                                            new EmbedBuilder()
+                                                .setTitle('⭐ Raid Concluded - Chaos Forces Victory ⭐')
+                                                .setDescription(`The raid has been concluded with a victory of Chaos Forces! \nThe CPUF has been destroyed and the truth have been revealed. \nThank you for participating in the raid.`)
+                                                .setColor(Colors.Green)
+                                                .setFooter({
+                                                    text: `Chaos Forces Alliance`,
+                                                    iconURL: interaction.guild.iconURL()
+                                                })
+                                                .setTimestamp()
+                                        ]
+                                })
 
-                        await hspsMsg.reply({
-                            embeds: [concludedEmbed]
-                        })
+                                await hspsMsg.reply({
+                                    allowedMentions: { parse: ["roles"] },
+                                    content: "<@&1233351676186853407>",
+                                    embeds:
+                                        [
+                                            new EmbedBuilder()
+                                                .setTitle('💀 Raid Concluded - Chaos Forces Victory 💾')
+                                                .setDescription(`The raid has been concluded, HSPS have lost! \nThe CPUF has been destroyed and data have been breached. \nThank you for participating in the raid.`)
+                                                .setColor(Colors.Red)
+                                                .setFooter({
+                                                    text: `Chaos Forces Alliance`,
+                                                    iconURL: interaction.guild.iconURL()
+                                                })
+                                                .setTimestamp()
+                                        ]
+                                })
+                                break;
+                            case 'security':
+                                await hspsMsg.reply({
+                                    allowedMentions: { parse: ["roles"] },
+                                    content: "<@&1233351676186853407>",
+                                    embeds:
+                                        [
+                                            new EmbedBuilder()
+                                                .setTitle('⭐ Raid Concluded - HSPS Victory ⭐')
+                                                .setDescription(`The raid has been concluded with a victory of HSPS! \nThe CPUF is now secured and data is safe. \nThank you for participating in the raid.`)
+                                                .setColor(Colors.Green)
+                                                .setFooter({
+                                                    text: `Chaos Forces Alliance`,
+                                                    iconURL: interaction.guild.iconURL()
+                                                })
+                                                .setTimestamp()
+                                        ]
+                                })
 
+                                await msg.reply({
+                                    allowedMentions: { parse: ["roles"] },
+                                    content: "<@&1094305864317419632>",
+                                    embeds:
+                                        [
+                                            new EmbedBuilder()
+                                                .setTitle('🛡️ Raid Concluded - HSPS Victory 🛡️')
+                                                .setDescription(`The raid has been concluded, Chaos Forces have lost! \nThe CPUF is now secured and data is safe. \nThank you for participating in the raid.`)
+                                                .setColor(Colors.Red)
+                                                .setFooter({
+                                                    text: `Chaos Forces Alliance`,
+                                                    iconURL: interaction.guild.iconURL()
+                                                })
+                                                .setTimestamp()
+                                        ]
+                                })
+                                break;
+                            case 'stalemate':
+                                await msg.reply({
+                                    allowedMentions: { parse: ["roles"] },
+                                    content: "<@&1094305864317419632>",
+                                    embeds:
+                                        [
+                                            new EmbedBuilder()
+                                                .setTitle('⛓️ Raid Concluded - Stalemate ⛓️')
+                                                .setDescription(`The raid has been concluded with a stalemate.
+Chaos Forces were able to destroy the facility, but HSPS managed to protect the data!
+With no data, we cannot reveal the truth about High Science.
+Thank you for participating in the raid.`)
+                                                .setColor(Colors.Aqua)
+                                                .setFooter({
+                                                    text: `Chaos Forces Alliance`,
+                                                    iconURL: interaction.guild.iconURL()
+                                                })
+                                                .setTimestamp()
+                                        ]
+                                })
+
+                                await hspsMsg.reply({
+                                    allowedMentions: { parse: ["roles"] },
+                                    content: "<@&1233351676186853407>",
+                                    embeds:
+                                        [
+                                            new EmbedBuilder()
+                                                .setTitle('⛓️ Raid Concluded - Stalemate ⛓️')
+                                                .setDescription(`The raid has been concluded with a stalemate.
+HSPS successfully protected the data, but Chaos Forces destroyed the facility!
+Even though facility was destroyed, the data was secured, rendering Chaos Forces unable to reveal the truth.
+Thank you for participating in the raid.`)
+                                                .setColor(Colors.Aqua)
+                                                .setFooter({
+                                                    text: `Chaos Forces Alliance`,
+                                                    iconURL: interaction.guild.iconURL()
+                                                })
+                                                .setTimestamp()
+                                        ]
+                                })
+                                break;
+                        }
                         await client.knex("raids")
                             .update({ is_concluded: true })
                             .where({ raid_id: raidID })
 
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Conclusion Success!')
@@ -521,7 +623,7 @@ module.exports = {
                     }
                 } catch (error) {
                     console.log(error)
-                    await interaction.editReply({
+                    return interaction.editReply({
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('Error!')
@@ -535,7 +637,83 @@ module.exports = {
                         ]
                     })
                 }
-                break;
+            case 'change-time':
+                try {
+                    const time = interaction.options.getInteger('time');
+                    const msgID = await result.map((id) => id.cfa_message_id);
+                    const msg = await raidChannel.messages.fetch(`${msgID[0]}`)
+                    const hspsMsgID = result.map((id) => id.hsps_message_id);
+                    const hspsRaidMsg = await hspsRaidChannel.messages.fetch(`${hspsMsgID[0]}`)
+
+
+                    await client.knex("raids")
+                        .update({ time: time })
+                        .where({ raid_id: raidID })
+
+                        await msg.reply({
+                            allowedMentions: { parse: ["roles"] },
+                            content: "<@&1094305864317419632>",
+                            embeds:
+                                [
+                                    new EmbedBuilder()
+                                        .setTitle('Raid Time Changed')
+                                        .setDescription(`The raid time has been changed, the raid will be on ${time}!`)
+                                        .setColor(Colors.DarkAqua)
+                                        .setFooter({
+                                            text: `Chaos Forces Alliance`,
+                                            iconURL: interaction.guild.iconURL()
+                                        })
+                                        .setTimestamp()
+                                ]
+                        })
+
+                        await hspsRaidMsg.reply({
+                            allowedMentions: { parse: ["roles"] },
+                            content: "<@&1233351676186853407>",
+                            embeds:
+                                [
+                                    new EmbedBuilder()
+                                        .setTitle('Raid Time Changed')
+                                        .setDescription(`The raid time has been changed, the raid will be on ${time}!`)
+                                        .setColor(Colors.DarkAqua)
+                                        .setFooter({
+                                            text: `Chaos Forces Alliance`,
+                                            iconURL: interaction.guild.iconURL()
+                                        })
+                                        .setTimestamp()
+                                ]
+                        })
+                        
+                    return interaction.editReply({
+                        embeds: [
+                            new EmbedBuilder()
+                                .setTitle('Time Change Success!')
+                                .setDescription('Raid time changed successfully!')
+                                .setColor(Colors.Green)
+                                .setFooter({
+                                    text: `Chaos Forces Alliance`,
+                                    iconURL: interaction.guild.iconURL()
+                                })
+                                .setTimestamp()
+                        ]
+                    })
+                } catch (error) {
+                    console.log(error)
+                    return interaction.editReply({
+                        embeds: [
+                            new EmbedBuilder()
+                                .setTitle('Error!')
+                                .setDescription('There was an error while executing this command! If the issue persists, please contact AstroHWeston.')
+                                .setColor(Colors.Red)
+                                .setFooter({
+                                    text: `Chaos Forces Alliance`,
+                                    iconURL: interaction.guild.iconURL()
+                                })
+                                .setTimestamp()
+                        ]
+                    })
+                }
+
         }
     }
 }
