@@ -29,7 +29,7 @@ module.exports = {
         try {
             const allowedIDs = ["1226408360551645254", "427832787605782549", "1239137720669044766"]
             if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
-                interaction.defereditReply();
+                interaction.deferReply();
                 const user = interaction.options.getUser('user');
                 const message = interaction.options.getString('message');
                 const userid = interaction.options.getNumber('userid');
@@ -53,7 +53,7 @@ module.exports = {
                         });
                     } catch (error) {
                         console.log(error);
-                        return interaction.editReply({ content: 'Seems like the user ID you wanted to DM could not be DM\'ed. The reason for it is that the user must be in the server where the bot is.', ephemeral: true });
+                        return interaction.editReply({ content: 'Seems like the user ID you wanted to DM could not be DMed. The reason for it is that the user must be in the server where the bot is.', ephemeral: true });
                     }
 
                     return interaction.editReply({ content: `Sent DM to ${user.tag}!`, ephemeral: true });
@@ -78,7 +78,7 @@ module.exports = {
             }
         } catch (error) {
             console.log(error);
-            return interaction.editReply({ content: 'There was an error while executing this command! Contact Danonienko if error presists.', ephemeral: true });
+            return interaction.editReply({ content: 'There was an error while executing this command! Contact Danonienko if error persists.', ephemeral: true });
         }
     }
 }
