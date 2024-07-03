@@ -27,10 +27,11 @@ module.exports = {
 
     async execute(interaction) {
         try {
+            await interaction.deferReply();
             const allowedIDs = ["1226408360551645254", "427832787605782549", "1239137720669044766"]
+
             if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
-                interaction.deferReply();
-                const user = interaction.options.getUser('user');
+                const user = interaction.options.getUser('member');
                 const message = interaction.options.getString('message');
                 const userid = interaction.options.getNumber('userid');
                 const attachment = interaction.options.getAttachment('attachment');
@@ -45,7 +46,7 @@ module.exports = {
 
                 if (userid) {
                     const user = await interaction.client.users.fetch(userid);
-                    
+
                     try {
                         user.send({
                             content: message,
@@ -78,6 +79,26 @@ module.exports = {
             }
         } catch (error) {
             console.log(error);
+
+            await interaction.channels.cache.get('1235938304990380113').send({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('Bot encountered an error!')
+                        .setDescription(`Someone ran a ${interaction.commandName} ${subCommand ? subCommand : ''} command and it errored!`)
+                        .setColor(Colors.Red)
+                        .setFields([
+                            { name: 'Error message', value: `\`\`\`js\n${error}\`\`\`` }
+                        ])
+                        .setFooter({
+                            text: `Chaos Forces Alliance`,
+                            iconURL: interaction.guild.iconURL()
+                        })
+                        .setTimestamp()
+                ],
+                allowedMentions: { parse: ["users"] },
+                content: '<@427832787605782549>'
+            })
+
             return interaction.editReply({ content: 'There was an error while executing this command! Contact Danonienko if error persists.', ephemeral: true });
         }
     }
