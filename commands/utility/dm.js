@@ -28,7 +28,7 @@ module.exports = {
     async execute(interaction) {
         try {
             await interaction.deferReply();
-            const allowedIDs = ["1226408360551645254", "427832787605782549", "1239137720669044766"]
+            const allowedIDs = ["1226408360551645254", "427832787605782549", "1239137720669044766", "1255634139730935860"]
 
             if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
                 const user = interaction.options.getUser('member');
