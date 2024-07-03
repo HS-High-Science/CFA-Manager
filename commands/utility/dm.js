@@ -36,26 +36,40 @@ module.exports = {
                 const userid = interaction.options.getNumber('userid');
                 const attachment = interaction.options.getAttachment('attachment');
 
+                await interaction.guild.channels.cache.get('1258036069572808725').send({
+                    embeds:
+                        [
+                            new EmbedBuilder()
+                                .setTitle(`${interaction.user.tag} sent a DM to ${user.tag}`)
+                                .setColor(Colors.Green)
+                                .setFields([
+                                    { name: 'Text Content', value: message },
+                                    { name: 'Attachment', value: attachment ? attachment.url : 'None' }
+                                ])
+                                .setFooter({
+                                    text: interaction.guild.name,
+                                    iconURL: interaction.guild.iconURL()
+                                })
+                                .setTimestamp()
+                        ]
+                });
+
                 if (user) {
                     user.send({
                         content: message,
                         files: attachment ? [attachment] : []
                     });
+
                     return interaction.editReply({ content: `Sent DM to ${user.tag}!`, ephemeral: true });
                 }
 
                 if (userid) {
                     const user = await interaction.client.users.fetch(userid);
 
-                    try {
-                        user.send({
-                            content: message,
-                            files: attachment ? [attachment] : []
-                        });
-                    } catch (error) {
-                        console.log(error);
-                        return interaction.editReply({ content: 'Seems like the user ID you wanted to DM could not be DMed. The reason for it is that the user must be in the server where the bot is.', ephemeral: true });
-                    }
+                    user.send({
+                        content: message,
+                        files: attachment ? [attachment] : []
+                    });
 
                     return interaction.editReply({ content: `Sent DM to ${user.tag}!`, ephemeral: true });
                 }
@@ -80,7 +94,7 @@ module.exports = {
         } catch (error) {
             console.log(error);
 
-            await interaction.channels.cache.get('1235938304990380113').send({
+            await interaction.guild.channels.cache.get('1258036097422852248').send({
                 embeds: [
                     new EmbedBuilder()
                         .setTitle('Bot encountered an error!')
