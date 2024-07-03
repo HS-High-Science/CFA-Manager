@@ -5,26 +5,26 @@ module.exports = {
         .setName('training')
         .setDescription('Replies with the training schedule!')
         .addSubcommand(subcommand =>
-        subcommand
-            .setName('schedule')
-            .setDescription('Schedules a training!')
-            .addIntegerOption(option =>
-                option
-                    .setName('time')
-                    .setDescription('The time at which the training will take place.')
-                    .setRequired(true)
-            )
+            subcommand
+                .setName('schedule')
+                .setDescription('Schedules a training!')
+                .addIntegerOption(option =>
+                    option
+                        .setName('time')
+                        .setDescription('The time at which the training will take place.')
+                        .setRequired(true)
+                )
         )
         .addSubcommand(subcommand =>
-        subcommand
-            .setName('start')
-            .setDescription('Starts a training.')
-            .addStringOption(option =>
-                option
-                    .setName('id')
-                    .setDescription('The ID of the training that you want to start.')
-                    .setRequired(true)
-            )
+            subcommand
+                .setName('start')
+                .setDescription('Starts a training.')
+                .addStringOption(option =>
+                    option
+                        .setName('id')
+                        .setDescription('The ID of the training that you want to start.')
+                        .setRequired(true)
+                )
         )
         .addSubcommand(subcommand =>
             subcommand
@@ -38,63 +38,62 @@ module.exports = {
                 )
         )
         .addSubcommand(subcommand =>
-        subcommand
-            .setName('end')
-            .setDescription('Ends a training.')
-            .addStringOption(option =>
-                option
-                    .setName('id')
-                    .setDescription('The ID of the training that you want to end.')
-                    .setRequired(true)
-            )
+            subcommand
+                .setName('end')
+                .setDescription('Ends a training.')
+                .addStringOption(option =>
+                    option
+                        .setName('id')
+                        .setDescription('The ID of the training that you want to end.')
+                        .setRequired(true)
+                )
         )
         .addSubcommand(subcommand =>
-        subcommand
-            .setName('cancel')
-            .setDescription('Cancels a training.')
-            .addStringOption(option =>
-                option
-                    .setName('id')
-                    .setDescription('The ID of the training that you want to cancel.')
-                    .setRequired(true)
-            )
-            .addStringOption(option =>
-            option
-                .setName('reason')
-                .setDescription('The reason for cancelling the training.')
-                .setRequired(true)
-            )
+            subcommand
+                .setName('cancel')
+                .setDescription('Cancels a training.')
+                .addStringOption(option =>
+                    option
+                        .setName('id')
+                        .setDescription('The ID of the training that you want to cancel.')
+                        .setRequired(true)
+                )
+                .addStringOption(option =>
+                    option
+                        .setName('reason')
+                        .setDescription('The reason for cancelling the training.')
+                        .setRequired(true)
+                )
         ),
 
     async execute(interaction) {
-        await interaction.deferReply({ ephemeral: true });
-        const client = await interaction.client;
-        const trainingID = interaction.options.getString('id');
-        const allowedIDs = ["1208839121682833548"];
-        if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
-            await interaction.editReply({
-                embeds:
-                    [
-                        new EmbedBuilder()
-                            .setTitle('Permission Denied!')
-                            .setDescription('You do not have the required permissions to use this command!')
-                            .setColor(Colors.Red)
-                            .setFooter({
-                                text: `Chaos Forces Alliance.`,
-                                iconURL: interaction.guild.iconURL()
-                            })
-                            .setTimestamp()
-                    ]
+        try {
+            await interaction.deferReply({ ephemeral: true });
+            const client = await interaction.client;
+            const trainingID = interaction.options.getString('id');
+            const allowedIDs = ["1208839121682833548"];
+            if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
+                return interaction.editReply({
+                    embeds:
+                        [
+                            new EmbedBuilder()
+                                .setTitle('Permission Denied!')
+                                .setDescription('You do not have the required permissions to use this command!')
+                                .setColor(Colors.Red)
+                                .setFooter({
+                                    text: `Chaos Forces Alliance.`,
+                                    iconURL: interaction.guild.iconURL()
+                                })
+                                .setTimestamp()
+                        ]
 
-            })
-            return;
-        }
-        const subcommand = interaction.options.getSubcommand();
-        const uuid = crypto.randomUUID();
-        const trainingChannel = interaction.guild.channels.cache.get('1203320915396530206');
-        switch (subcommand) {
-            case 'schedule':
-                try {
+                })
+            }
+            const subcommand = interaction.options.getSubcommand();
+            const uuid = crypto.randomUUID();
+            const trainingChannel = interaction.guild.channels.cache.get('1203320915396530206');
+            switch (subcommand) {
+                case 'schedule': {
                     const time = interaction.options.getInteger('time');
                     const scheduleEmbed = new EmbedBuilder()
                         .setTitle('Incoming Training Announcement!')
@@ -135,7 +134,7 @@ Breaking any of these 2 rules can lead to a warning/strike.
                             is_concluded: false
                         })
 
-                    await interaction.editReply({
+                    return interaction.editReply({
                         embeds:
                             [
                                 new EmbedBuilder()
@@ -152,33 +151,15 @@ Breaking any of these 2 rules can lead to a warning/strike.
                                     .setTimestamp()
                             ]
                     });
-                } catch (err) {
-                    console.log(err)
-                    await interaction.editReply({
-                        embeds:
-                            [
-                                new EmbedBuilder()
-                                    .setTitle('Error!')
-                                    .setDescription('There was an error while scheduling the training!')
-                                    .setColor(Colors.Red)
-                                    .setFooter({
-                                        text: `Chaos Forces Alliance.`,
-                                        iconURL: interaction.guild.iconURL()
-                                    })
-                                    .setTimestamp()
-                            ]
-                    })
                 }
-                break;
-            case 'start':
-                try {
+                case 'start': {
                     const result = await client.knex("trainings")
                         .select("*")
                         .where("training_id", trainingID)
                     const isConcluded = result.map((id) => id.is_concluded);
 
                     if (result.length === 0) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -191,10 +172,9 @@ Breaking any of these 2 rules can lead to a warning/strike.
                                     .setTimestamp()
                             ]
                         })
-                        return;
                     }
                     if (isConcluded[0] === 1) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -207,7 +187,6 @@ Breaking any of these 2 rules can lead to a warning/strike.
                                     .setTimestamp()
                             ]
                         })
-                        return;
                     }
                     const msgID = result.map((id) => id.message_id);
                     const trainingMsg = await trainingChannel.messages.fetch(`${msgID[0]}`)
@@ -229,11 +208,11 @@ Breaking any of these 2 rules can lead to a warning/strike.
                         })
 
                     await trainingMsg.reply({
-                        allowedMentions: {parse: ["roles"]},
+                        allowedMentions: { parse: ["roles"] },
                         content: '<@&1208467485104406619>',
                         embeds: [startEmbed]
                     })
-                    await interaction.editReply({
+                    return interaction.editReply({
                         embeds:
                             [
                                 new EmbedBuilder()
@@ -250,33 +229,15 @@ Breaking any of these 2 rules can lead to a warning/strike.
                                     .setTimestamp()
                             ]
                     });
-                } catch (err) {
-                    console.log(err);
-                    await interaction.editReply({
-                        embeds:
-                            [
-                                new EmbedBuilder()
-                                    .setTitle('Error!')
-                                    .setDescription('There was an error while starting the training!')
-                                    .setColor(Colors.Red)
-                                    .setFooter({
-                                        text: `Chaos Forces Alliance.`,
-                                        iconURL: interaction.guild.iconURL()
-                                    })
-                                    .setTimestamp()
-                            ]
-                    })
                 }
-                break;
-            case 'lock':
-                try {
+                case 'lock': {
                     const result = await client.knex("trainings")
                         .select("*")
                         .where("training_id", trainingID)
                     const isConcluded = result.map((id) => id.is_concluded);
 
                     if (result.length === 0) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -289,10 +250,9 @@ Breaking any of these 2 rules can lead to a warning/strike.
                                     .setTimestamp()
                             ]
                         })
-                        return;
                     }
                     if (isConcluded[0] === 1) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -305,7 +265,6 @@ Breaking any of these 2 rules can lead to a warning/strike.
                                     .setTimestamp()
                             ]
                         })
-                        return;
                     }
                     const msgID = result.map((id) => id.message_id);
                     const trainingMsg = await trainingChannel.messages.fetch(`${msgID[0]}`)
@@ -325,11 +284,11 @@ If you didn't make it in time, **attend another training.**`)
                         })
 
                     await trainingMsg.reply({
-                        allowedMentions: {parse: ["roles"]},
+                        allowedMentions: { parse: ["roles"] },
                         content: '<@&1208467485104406619>',
                         embeds: [startEmbed]
                     })
-                    await interaction.editReply({
+                    return interaction.editReply({
                         embeds:
                             [
                                 new EmbedBuilder()
@@ -346,32 +305,14 @@ If you didn't make it in time, **attend another training.**`)
                                     .setTimestamp()
                             ]
                     });
-                } catch (err) {
-                    console.log(err);
-                    await interaction.editReply({
-                        embeds:
-                            [
-                                new EmbedBuilder()
-                                    .setTitle('Error!')
-                                    .setDescription('There was an error while locking the training!')
-                                    .setColor(Colors.Red)
-                                    .setFooter({
-                                        text: `Chaos Forces Alliance.`,
-                                        iconURL: interaction.guild.iconURL()
-                                    })
-                                    .setTimestamp()
-                            ]
-                    })
                 }
-                break;
-            case 'cancel':
-                try {
+                case 'cancel': {
                     const result = await client.knex("trainings")
                         .select("*")
                         .where("training_id", trainingID)
 
                     if (result.length === 0) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -384,12 +325,11 @@ If you didn't make it in time, **attend another training.**`)
                                     .setTimestamp()
                             ]
                         })
-                        return;
                     }
 
                     const isConcluded = result.map((id) => id.is_concluded);
                     if (isConcluded[0] === 1) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -402,7 +342,6 @@ If you didn't make it in time, **attend another training.**`)
                                     .setTimestamp()
                             ]
                         })
-                        return;
                     }
 
                     const msgID = result.map((id) => id.message_id);
@@ -422,7 +361,7 @@ If you didn't make it in time, **attend another training.**`)
                         .setTimestamp()
 
                     await msg.reply({
-                        allowedMentions: {parse: ["roles"]},
+                        allowedMentions: { parse: ["roles"] },
                         content: "<@&1208467485104406619>",
                         embeds: [cancelEmbed]
                     });
@@ -432,7 +371,7 @@ If you didn't make it in time, **attend another training.**`)
                         .where("training_id", trainingID)
                         .del()
 
-                    await interaction.editReply({
+                    return interaction.editReply({
                         embeds:
                             [
                                 new EmbedBuilder()
@@ -449,27 +388,8 @@ If you didn't make it in time, **attend another training.**`)
                                     .setTimestamp()
                             ]
                     });
-
-                } catch (err) {
-                    console.log(err);
-                    await interaction.editReply({
-                        embeds:
-                            [
-                                new EmbedBuilder()
-                                    .setTitle('Error!')
-                                    .setDescription('There was an error while cancelling the training! If the issue persists, please contact AstroHWeston.')
-                                    .setColor(Colors.Red)
-                                    .setFooter({
-                                        text: `Chaos Forces Alliance.`,
-                                        iconURL: interaction.guild.iconURL()
-                                    })
-                                    .setTimestamp()
-                            ]
-                    })
                 }
-                break;
-            case 'end':
-                try {
+                case 'end': {
                     const result = await client.knex("trainings")
                         .select("*")
                         .where("training_id", trainingID)
@@ -479,7 +399,7 @@ If you didn't make it in time, **attend another training.**`)
                     const msg = await trainingChannel.messages.fetch(`${msgID[0]}`);
 
                     if (result.length === 0) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -493,7 +413,7 @@ If you didn't make it in time, **attend another training.**`)
                             ]
                         })
                     } else if (isConcluded[0] === 1) {
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Error!')
@@ -508,7 +428,7 @@ If you didn't make it in time, **attend another training.**`)
                             ]
                         })
                     } else {
-                        const concludedEmbed = await new EmbedBuilder()
+                        const concludedEmbed = new EmbedBuilder()
                             .setColor(Colors.Blurple)
                             .setTitle('Training Concluded')
                             .setDescription(`The above training has concluded.`)
@@ -526,7 +446,7 @@ If you didn't make it in time, **attend another training.**`)
                             .update({ is_concluded: true })
                             .where({ training_id: trainingID })
 
-                        await interaction.editReply({
+                        return interaction.editReply({
                             embeds: [
                                 new EmbedBuilder()
                                     .setTitle('Conclusion Success!')
@@ -540,24 +460,44 @@ If you didn't make it in time, **attend another training.**`)
                             ]
                         })
                     }
-                } catch (err) {
-                    console.log(err)
-                    await interaction.editReply({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setTitle('Error!')
-                                .setDescription('There was an error while executing this command! If the issue persists, please contact AstroHWeston.')
-                                .setThumbnail(failure)
-                                .setColor(Colors.Red)
-                                .setFooter({
-                                    text: `Chaos Forces Alliance`,
-                                    iconURL: interaction.guild.iconURL()
-                                })
-                                .setTimestamp()
-                        ]
-                    })
                 }
-                break;
+            }
+        } catch (error) {
+            console.log(error);
+
+            await interaction.channels.cache.get('1235938304990380113').send({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('Bot encountered an error!')
+                        .setDescription(`Someone ran a ${interaction.commandName} ${subCommand ? subCommand : ''} command and it errored!`)
+                        .setColor(Colors.Red)
+                        .setFields([
+                            { name: 'Error message', value: `\`\`\`js\n${error}\`\`\`` }
+                        ])
+                        .setFooter({
+                            text: `Chaos Forces Alliance`,
+                            iconURL: interaction.guild.iconURL()
+                        })
+                        .setTimestamp()
+                ],
+                allowedMentions: { parse: ["users"] },
+                content: '<@427832787605782549>'
+            })
+
+            return interaction.editReply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('Error!')
+                        .setDescription('There was an error while executing this command! If the issue persists, please contact Danonienko.')
+                        .setThumbnail(failure)
+                        .setColor(Colors.Red)
+                        .setFooter({
+                            text: `Chaos Forces Alliance`,
+                            iconURL: interaction.guild.iconURL()
+                        })
+                        .setTimestamp()
+                ]
+            })
         }
     }
 }
