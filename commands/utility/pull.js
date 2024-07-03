@@ -8,9 +8,78 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
 
-        const allowedIDs = ["1226408360551645254"]
+        const allowedIDs = ["1226408360551645254", "427832787605782549"]
 
-        if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
+        if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
+
+
+            exec('git pull', (error, stdout, stderr) => {
+                if (error) {
+                    console.log(`error: ${error.message}`);
+
+                    return interaction.editReply({
+                        embeds:
+                            [
+                                new EmbedBuilder()
+                                    .setColor(Colors.Red)
+                                    .setTitle('Pull Failed')
+                                    .setDescription(`\`\`\`js\n${error.message}\`\`\``)
+                                    .setTimestamp()
+                                    .setFooter({ text: interaction.guild.name })
+                            ]
+                    })
+                }
+
+                if (stderr) {
+                    console.log(`stderr: ${stderr}`);
+
+                    return interaction.editReply({
+                        embeds:
+                            [
+                                new EmbedBuilder()
+                                    .setColor(Colors.Red)
+                                    .setTitle('Pull Failed')
+                                    .setDescription(`\`\`\`js\n${error.message}\`\`\``)
+                                    .setTimestamp()
+                                    .setFooter({ text: interaction.guild.name })
+                            ]
+                    })
+                }
+
+                if (stdout.includes('Already up to date.')) {
+                    console.log(`stdout: ${stdout}`);
+
+                    return interaction.editReply({
+                        embeds:
+                            [
+                                new EmbedBuilder()
+                                    .setColor(Colors.Blue)
+                                    .setTitle('Already up to date!')
+                                    .setDescription("The bot has latest version of the code!")
+                                    .setTimestamp()
+                                    .setFooter({ text: interaction.guild.name })
+                            ]
+                    })
+                }
+
+                console.log(`stdout: ${stdout}`);
+
+                return interaction.editReply({
+                    embeds:
+                        [
+                            new EmbedBuilder()
+                                .setColor(Colors.Blue)
+                                .setTitle('Updated Successfully!')
+                                .addFields([
+                                    { name: 'Output', value: `\`\`\`js\n${stdout}\`\`\`` },
+                                ])
+                                .setTimestamp()
+                                .setFooter({ text: interaction.guild.name })
+
+                        ]
+                });
+            });
+        } else {
             return interaction.editReply({
                 embeds:
                     [
@@ -23,72 +92,5 @@ module.exports = {
                     ]
             })
         }
-
-        exec('git pull', (error, stdout, stderr) => {
-            if (error) {
-                console.log(`error: ${error.message}`);
-
-                return interaction.editReply({
-                    embeds:
-                        [
-                            new EmbedBuilder()
-                                .setColor(Colors.Red)
-                                .setTitle('Pull Failed')
-                                .setDescription(`\`\`\`js\n${error.message}\`\`\``)
-                                .setTimestamp()
-                                .setFooter({ text: interaction.guild.name })
-                        ]
-                })
-            }
-
-            if (stderr) {
-                console.log(`stderr: ${stderr}`);
-
-                return interaction.editReply({
-                    embeds:
-                        [
-                            new EmbedBuilder()
-                                .setColor(Colors.Red)
-                                .setTitle('Pull Failed')
-                                .setDescription(`\`\`\`js\n${error.message}\`\`\``)
-                                .setTimestamp()
-                                .setFooter({ text: interaction.guild.name })
-                        ]
-                })
-            }
-
-            if (stdout.includes('Already up to date.')) {
-                console.log(`stdout: ${stdout}`);
-
-                return interaction.editReply({
-                    embeds:
-                        [
-                            new EmbedBuilder()
-                                .setColor(Colors.Blue)
-                                .setTitle('Already up to date!')
-                                .setDescription(`\`\`\`js\n${stdout}\`\`\``)
-                                .setTimestamp()
-                                .setFooter({ text: interaction.guild.name })
-                        ]
-                })
-            }
-
-            console.log(`stdout: ${stdout}`);
-
-            return interaction.editReply({
-                embeds:
-                    [
-                        new EmbedBuilder()
-                            .setColor(Colors.Blue)
-                            .setTitle('Updated Successfully!')
-                            .addFields([
-                                { name: 'Output', value: `\`\`\`js\n${stdout}\`\`\`` },
-                            ])
-                            .setTimestamp()
-                            .setFooter({ text: interaction.guild.name })
-
-                    ]
-            });
-        });
-    },
+    }
 }
