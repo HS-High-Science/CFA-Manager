@@ -465,7 +465,7 @@ If you didn't make it in time, **attend another training.**`)
         } catch (error) {
             console.log(error);
 
-            await interaction.channels.cache.get('1235938304990380113').send({
+            await interaction.channels.cache.get('1258036097422852248').send({
                 embeds: [
                     new EmbedBuilder()
                         .setTitle('Bot encountered an error!')
