@@ -28,7 +28,7 @@ module.exports = {
     async execute(interaction) {
         try {
             await interaction.deferReply();
-            const allowedIDs = ["1226408360551645254", "427832787605782549", "1239137720669044766"]
+            const allowedIDs = ["1226408360551645254", "427832787605782549", "1239137720669044766", "1255634139730935860"]
 
             if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
                 const user = interaction.options.getUser('member');
@@ -43,8 +43,8 @@ module.exports = {
                                 .setTitle(`${interaction.user.tag} sent a DM to ${user.tag}`)
                                 .setColor(Colors.Green)
                                 .setFields([
-                                    { name: 'Text Content', value: message },
-                                    { name: 'Attachment', value: attachment ? attachment.url : 'None' }
+                                    { name: 'Text Content', value: message ? message : 'N/A' },
+                                    { name: 'Attachment', value: attachment ? attachment.url : 'N/A' }
                                 ])
                                 .setFooter({
                                     text: interaction.guild.name,
@@ -56,7 +56,7 @@ module.exports = {
 
                 if (user) {
                     user.send({
-                        content: message,
+                        content: message ? message : '** **',
                         files: attachment ? [attachment] : []
                     });
 
@@ -67,7 +67,7 @@ module.exports = {
                     const user = await interaction.client.users.fetch(userid);
 
                     user.send({
-                        content: message,
+                        content: message ? message : '** **',
                         files: attachment ? [attachment] : []
                     });
 
