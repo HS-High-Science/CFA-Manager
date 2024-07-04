@@ -11,7 +11,7 @@ module.exports = {
         const latency = `\`\`\`ini\n[ ${Math.floor(msg.createdTimestamp - timestamp)}ms ]\`\`\``;
         const apiLatency = `\`\`\`ini\n[ ${Math.round(interaction.client.ws.ping)}ms ]\`\`\``;
         embed
-            .setTitle(`Pong! 🏓 lol`)
+            .setTitle(`Pong! 🏓`)
             .setDescription(null)
             .addFields([
                 { name: "Latency", value: latency, inline: true },

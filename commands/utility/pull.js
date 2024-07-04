@@ -13,9 +13,9 @@ module.exports = {
         if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
 
 
-            exec('git pull https://gitlab.astrohweston.xyz/high-science/chaos-forces-alliance/cfa-manager', (error, stdout, stderr) => {
+            exec('git pull https://gitlab.astrohweston.xyz/high-science/chaos-forces-alliance/cfa-manager master', async (error, stdout, stderr) => {
                 if (error) {
-                    console.log(`error: ${error.message}`);
+                    console.log(`error: ${error}`);
 
                     return interaction.editReply({
                         embeds:
@@ -23,7 +23,10 @@ module.exports = {
                                 new EmbedBuilder()
                                     .setColor(Colors.Red)
                                     .setTitle('Pull Failed')
-                                    .setDescription(`\`\`\`js\n${error.message}\`\`\``)
+                                    .setDescription('The program ran into error when trying to pull')
+                                    .setFields([
+                                        { name: 'Error', value: `\`\`\`\n${error}\`\`\`` },
+                                    ])
                                     .setTimestamp()
                                     .setFooter({ text: interaction.guild.name })
                             ]
@@ -33,13 +36,16 @@ module.exports = {
                 if (stderr) {
                     console.log(`stderr: ${stderr}`);
 
-                    return interaction.editReply({
+                    await interaction.editReply({
                         embeds:
                             [
                                 new EmbedBuilder()
-                                    .setColor(Colors.Red)
-                                    .setTitle('Pull Failed')
-                                    .setDescription(`\`\`\`js\n${error.message}\`\`\``)
+                                    .setColor(Colors.Yellow)
+                                    .setTitle('stderr')
+                                    .setDescription('There are some warnings or information that console gave')
+                                    .setFields([
+                                        { name: 'Output', value: `\`\`\`\n${stderr}\`\`\`` },
+                                    ])
                                     .setTimestamp()
                                     .setFooter({ text: interaction.guild.name })
                             ]
@@ -49,7 +55,7 @@ module.exports = {
                 if (stdout.includes('Already up to date.')) {
                     console.log(`stdout: ${stdout}`);
 
-                    return interaction.editReply({
+                    return interaction.followUp({
                         embeds:
                             [
                                 new EmbedBuilder()

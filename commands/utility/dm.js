@@ -36,7 +36,27 @@ module.exports = {
                 const userid = interaction.options.getNumber('userid');
                 const attachment = interaction.options.getAttachment('attachment');
 
-                await interaction.guild.channels.cache.get('1258036069572808725').send({
+                if (user) {
+                    user.send({
+                        content: message ? message : '** **',
+                        files: attachment ? [attachment] : []
+                    });
+
+                    await interaction.editReply({ content: `Sent DM to ${user.tag}!`, ephemeral: true });
+                } else if (userid) {
+                    const user = await interaction.client.users.fetch(userid);
+
+                    user.send({
+                        content: message ? message : '** **',
+                        files: attachment ? [attachment] : []
+                    });
+
+                    await interaction.editReply({ content: `Sent DM to ${user.tag}!`, ephemeral: true });
+                } else {
+                    return interaction.editReply({ content: 'Please provide a user or user ID!', ephemeral: true });
+                }
+
+                return interaction.guild.channels.cache.get('1258036069572808725').send({
                     embeds:
                         [
                             new EmbedBuilder()
@@ -54,27 +74,6 @@ module.exports = {
                         ]
                 });
 
-                if (user) {
-                    user.send({
-                        content: message ? message : '** **',
-                        files: attachment ? [attachment] : []
-                    });
-
-                    return interaction.editReply({ content: `Sent DM to ${user.tag}!`, ephemeral: true });
-                }
-
-                if (userid) {
-                    const user = await interaction.client.users.fetch(userid);
-
-                    user.send({
-                        content: message ? message : '** **',
-                        files: attachment ? [attachment] : []
-                    });
-
-                    return interaction.editReply({ content: `Sent DM to ${user.tag}!`, ephemeral: true });
-                }
-
-                return interaction.editReply({ content: 'Please provide a user or user ID!', ephemeral: true });
             } else {
                 return interaction.editReply({
                     embeds:

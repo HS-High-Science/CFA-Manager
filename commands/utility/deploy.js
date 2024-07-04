@@ -4,7 +4,7 @@ const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('deploy')
-        .setDescription('Deploys commands'),
+        .setDescription('Manually deploy/re-deploy commands'),
     async execute(interaction) {
         await interaction.deferReply();
 
@@ -19,7 +19,7 @@ module.exports = {
                             new EmbedBuilder()
                                 .setColor(Colors.Red)
                                 .setTitle('Deploy Failed')
-                                .setDescription(`\`\`\`js\n${error.message}\`\`\``)
+                                .setDescription(`\`\`\`\n${error.message}\`\`\``)
                                 .setTimestamp()
                                 .setFooter({ text: interaction.guild.name })
                         ]
@@ -31,8 +31,11 @@ module.exports = {
                         embeds: [
                             new EmbedBuilder()
                                 .setColor(Colors.Red)
-                                .setTitle('Deploy Failed')
-                                .setDescription(`\`\`\`js\n${stderr}\`\`\``)
+                                .setTitle('stderr')
+                                .setDescription('There are some warnings or information that console gave')
+                                .setFields([
+                                    { name: 'Output', value: `\`\`\`\n${stderr}\`\`\`` },
+                                ])
                                 .setTimestamp()
                                 .setFooter({ text: interaction.guild.name })
                         ]
@@ -45,12 +48,17 @@ module.exports = {
                             new EmbedBuilder()
                                 .setColor(Colors.Green)
                                 .setTitle('Deploy Successful')
-                                .setDescription(`\`\`\`js\n${stdout}\`\`\``)
+                                .setDescription('Re-deployed commands successfully!')
+                                .setFields([
+                                    { name: 'Output', value: `\`\`\`\n${stdout}\`\`\`` },
+                                ])
                                 .setTimestamp()
                                 .setFooter({ text: interaction.guild.name })
                         ]
                 });
             });
+        } else {
+            return interaction.reply({ content: 'You do not have permission to use this command!', ephemeral: true });
         }
     }
 }
