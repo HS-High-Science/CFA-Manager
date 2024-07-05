@@ -4,7 +4,7 @@ require('dotenv').config();
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('pull')
+        .setName('backup-pull')
         .setDescription('A backup pull command if my stupid ass messes up with the main pull command very badly'),
     async execute(interaction) {
         const allowedIDs = ["1226408360551645254", "427832787605782549"]
