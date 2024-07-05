@@ -13,7 +13,7 @@ module.exports = {
         if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
 
 
-            exec('git pull https://gitlab.astrohweston.xyz/high-science/chaos-forces-alliance/cfa-manager master', async (error, stdout, stderr) => {
+            exec('git pull Gitlab master', async (error, stdout, stderr) => {
                 if (error) {
                     console.log(`error: ${error}`);
 
