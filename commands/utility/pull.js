@@ -7,13 +7,11 @@ module.exports = {
         .setName('pull')
         .setDescription('Pulls changes from the repository'),
     async execute(interaction) {
-        await interaction.deferReply();
-
         const allowedIDs = ["1226408360551645254", "427832787605782549"]
 
         if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
             await interaction.reply('`Pulling...`');
-            
+
             exec(`git pull https://${process.env.GIT_USERNAME}:${process.env.GIT_TOKEN}@gitlab.astrohweston.xyz/high-science/chaos-forces-alliance/cfa-manager master`, async (error, stdout, stderr) => {
                 if (error) {
                     console.log(`error: ${error}`);
