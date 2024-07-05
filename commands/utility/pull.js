@@ -12,7 +12,7 @@ module.exports = {
         const allowedIDs = ["1226408360551645254", "427832787605782549"]
 
         if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
-            interaction.reply('`Pulling...`');
+            await interaction.reply('`Pulling...`');
             
             exec(`git pull https://${process.env.GIT_USERNAME}:${process.env.GIT_TOKEN}@gitlab.astrohweston.xyz/high-science/chaos-forces-alliance/cfa-manager master`, async (error, stdout, stderr) => {
                 if (error) {
