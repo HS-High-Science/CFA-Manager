@@ -6,7 +6,7 @@ module.exports = {
         .setName('deploy')
         .setDescription('Manually deploy/re-deploy commands'),
     async execute(interaction) {
-        await interaction.deferReply();
+        interaction.reply('`Re-Deploying...`')
 
         const allowedIDs = ["1226408360551645254", "427832787605782549"]
 
@@ -27,7 +27,7 @@ module.exports = {
                 }
                 if (stderr) {
                     console.log(`stderr: ${stderr}`);
-                    return interaction.editReply({
+                    return interaction.followUp({
                         embeds: [
                             new EmbedBuilder()
                                 .setColor(Colors.Red)
@@ -42,7 +42,7 @@ module.exports = {
                     });
                 }
                 console.log(`stdout: ${stdout}`);
-                return interaction.editReply({
+                return interaction.followUp({
                     embeds:
                         [
                             new EmbedBuilder()
