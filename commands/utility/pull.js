@@ -1,5 +1,6 @@
 const { exec } = require('child_process');
 const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
+require('dotenv').config();
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,7 +14,7 @@ module.exports = {
         if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
 
 
-            exec('git pull Gitlab master', async (error, stdout, stderr) => {
+            exec(`git pull https://${process.env.GIT_USERNAME}:${process.env.GIT_TOKEN}@gitlab.astrohweston.xyz/high-science/chaos-forces-alliance/cfa-manager master`, async (error, stdout, stderr) => {
                 if (error) {
                     console.log(`error: ${error}`);
 
@@ -41,8 +42,8 @@ module.exports = {
                             [
                                 new EmbedBuilder()
                                     .setColor(Colors.Yellow)
-                                    .setTitle('stderr')
-                                    .setDescription('There are some warnings or information that console gave')
+                                    .setTitle('Standard Error')
+                                    .setDescription('There are some warnings or information the shell gave')
                                     .setFields([
                                         { name: 'Output', value: `\`\`\`\n${stderr}\`\`\`` },
                                     ])
