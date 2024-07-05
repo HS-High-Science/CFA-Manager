@@ -5,7 +5,7 @@ require('dotenv').config();
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('pull')
-        .setDescription('Pulls changes from the repository'),
+        .setDescription('[DEV] Pulls changes from the repository'),
     async execute(interaction) {
         const allowedIDs = ["1226408360551645254", "427832787605782549"]
 

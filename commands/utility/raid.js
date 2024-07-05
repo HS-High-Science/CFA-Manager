@@ -59,6 +59,11 @@ module.exports = {
         .addSubcommand(subCommand => subCommand
             .setName('change-time')
             .setDescription('Allows you to change the time of the raid')
+            .addStringOption(option => option
+                .setName('id')
+                .setDescription('The ID of the raid you want to change')
+                .setRequired(true)
+            )
             .addIntegerOption(option => option
                 .setName('time')
                 .setDescription('New time for the raid')

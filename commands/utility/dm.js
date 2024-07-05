@@ -36,7 +36,7 @@ module.exports = {
                         files: attachment ? [attachment] : []
                     });
 
-                    await interaction.editReply({ content: `Sent DM to ${user.tag}!`, ephemeral: true });
+                    await interaction.editReply({ content: `Sent DM to ${user.tag}!` })
 
                     return interaction.guild.channels.cache.get('1258036069572808725').send({
                         embeds:

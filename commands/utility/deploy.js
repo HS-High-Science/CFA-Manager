@@ -4,7 +4,7 @@ const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('deploy')
-        .setDescription('Manually deploy/re-deploy commands'),
+        .setDescription('[DEV] Manually deploy/re-deploy commands'),
     async execute(interaction) {
         interaction.reply('`Re-Deploying...`')
 
