@@ -11,19 +11,6 @@ module.exports = {
             interaction.reply('`Re-Deploying...`')
 
             const { stdout, stderr } = spawn('node deploy-commands', { shell: true })
-            // if (error) {
-            //     console.log(`error: ${error.message}`);
-            //     return interaction.editReply({
-            //         embeds: [
-            //             new EmbedBuilder()
-            //                 .setColor(Colors.Red)
-            //                 .setTitle('Deploy Failed')
-            //                 .setDescription(`\`\`\`\n${error.message}\`\`\``)
-            //                 .setTimestamp()
-            //                 .setFooter({ text: interaction.guild.name })
-            //         ]
-            //     });
-            // }
 
             stderr.on('data', async (data) => {
                 console.log(`stderr: ${data}`);
