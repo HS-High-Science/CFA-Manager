@@ -28,7 +28,7 @@ module.exports = {
             stderr.on('data', async (data) => {
                 console.log(`stderr: ${data}`);
 
-                await interaction.editReply({
+                await interaction.followUp({
                     embeds: [
                         new EmbedBuilder()
                             .setColor(Colors.Red)
@@ -50,9 +50,9 @@ module.exports = {
                 return interaction.editReply({
                     embeds: [
                         new EmbedBuilder()
-                            .setColor(Colors.Green)
-                            .setTitle('Deploy Successful')
-                            .setDescription('Re-deployed commands successfully!')
+                            .setColor(Colors.Blurple)
+                            .setTitle('Deploy Operation')
+                            .setDescription('The command is being executed, watch output for results.')
                             .setFields([
                                 { name: 'Output', value: `\`\`\`\n${data}\`\`\`` },
                             ])
