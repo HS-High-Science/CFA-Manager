@@ -640,7 +640,7 @@ Thank you for participating in the raid.`)
                 embeds: [
                     new EmbedBuilder()
                         .setTitle('Bot encountered an error!')
-                        .setDescription(`Someone ran a ${interaction.commandName} ${subCommand ? subCommand : ''} command and it errored!`)
+                        .setDescription(`someone did an oopsie fucking daisy`)
                         .setColor(Colors.Red)
                         .setFields([
                             { name: 'Error message', value: `\`\`\`js\n${error}\`\`\`` }
