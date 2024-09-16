@@ -98,7 +98,7 @@ module.exports = {
             const subCommand = await interaction.options.getSubcommand();
             const uuid = crypto.randomUUID();
             const raidChannel = await interaction.guild.channels.cache.get('1116696712061394974');
-            const hspsRaidChannel = await client.channels.cache.get('1055486389250162779');
+            const hspsRaidChannel = await client.channels.cache.get('1271391431784665163');
 
             switch (subCommand) {
                 case 'schedule':
@@ -153,7 +153,7 @@ High Science is requesting all available security to react with ✅ to confirm t
 
                         const hspsMessage = await hspsRaidChannel.send({
                             allowedMentions: { parse: ["roles"] },
-                            content: "<@&1233351676186853407>",
+                            content: "<@&1258844664438718484>",
                             embeds: [hspsScheduleEmbed]
                         });
 
@@ -268,7 +268,7 @@ High Science is requesting all available security to react with ✅ to confirm t
 
                         await hspsRaidMsg.reply({
                             allowedMentions: { parse: ["roles"] },
-                            content: '<@&1233351676186853407>',
+                            content: '<@&1258844664438718484>',
                             embeds: [hspsStartEmbed]
                         })
 
@@ -374,7 +374,7 @@ High Science is requesting all available security to react with ✅ to confirm t
 
                         await hspsMsg.reply({
                             allowedMentions: { parse: ["roles"] },
-                            content: "<@&1233351676186853407>",
+                            content: "<@&1258844664438718484>",
                             embeds: [hspsCancelEmbed]
                         });
 
@@ -460,7 +460,7 @@ High Science is requesting all available security to react with ✅ to confirm t
 
                                 await hspsMsg.reply({
                                     allowedMentions: { parse: ["roles"] },
-                                    content: "<@&1233351676186853407>",
+                                    content: "<@&1258844664438718484>",
                                     embeds:
                                         [
                                             new EmbedBuilder()
@@ -478,7 +478,7 @@ High Science is requesting all available security to react with ✅ to confirm t
                             case 'security':
                                 await hspsMsg.reply({
                                     allowedMentions: { parse: ["roles"] },
-                                    content: "<@&1233351676186853407>",
+                                    content: "<@&1258844664438718484>",
                                     embeds:
                                         [
                                             new EmbedBuilder()
@@ -533,7 +533,7 @@ Thank you for participating in the raid.`)
 
                                 await hspsMsg.reply({
                                     allowedMentions: { parse: ["roles"] },
-                                    content: "<@&1233351676186853407>",
+                                    content: "<@&1258844664438718484>",
                                     embeds:
                                         [
                                             new EmbedBuilder()
@@ -603,7 +603,7 @@ Thank you for participating in the raid.`)
 
                         await hspsRaidMsg.reply({
                             allowedMentions: { parse: ["roles"] },
-                            content: "<@&1233351676186853407>",
+                            content: "<@&1258844664438718484>",
                             embeds:
                                 [
                                     new EmbedBuilder()
