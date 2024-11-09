@@ -59,6 +59,11 @@ module.exports = {
         .addSubcommand(subCommand => subCommand
             .setName('change-time')
             .setDescription('Allows you to change the time of the raid')
+            .addStringOption(option => option
+                .setName('id')
+                .setDescription('The ID of the raid you want to change')
+                .setRequired(true)
+            )
             .addIntegerOption(option => option
                 .setName('time')
                 .setDescription('New time for the raid')
@@ -93,7 +98,7 @@ module.exports = {
             const subCommand = await interaction.options.getSubcommand();
             const uuid = crypto.randomUUID();
             const raidChannel = await interaction.guild.channels.cache.get('1116696712061394974');
-            const hspsRaidChannel = await client.channels.cache.get('1055486389250162779');
+            const hspsRaidChannel = await client.channels.cache.get('1271391431784665163');
 
             switch (subCommand) {
                 case 'schedule':
@@ -148,7 +153,7 @@ High Science is requesting all available security to react with ✅ to confirm t
 
                         const hspsMessage = await hspsRaidChannel.send({
                             allowedMentions: { parse: ["roles"] },
-                            content: "<@&1233351676186853407>",
+                            content: "<@&1258844664438718484>",
                             embeds: [hspsScheduleEmbed]
                         });
 
@@ -263,7 +268,7 @@ High Science is requesting all available security to react with ✅ to confirm t
 
                         await hspsRaidMsg.reply({
                             allowedMentions: { parse: ["roles"] },
-                            content: '<@&1233351676186853407>',
+                            content: '<@&1258844664438718484>',
                             embeds: [hspsStartEmbed]
                         })
 
@@ -369,7 +374,7 @@ High Science is requesting all available security to react with ✅ to confirm t
 
                         await hspsMsg.reply({
                             allowedMentions: { parse: ["roles"] },
-                            content: "<@&1233351676186853407>",
+                            content: "<@&1258844664438718484>",
                             embeds: [hspsCancelEmbed]
                         });
 
@@ -455,7 +460,7 @@ High Science is requesting all available security to react with ✅ to confirm t
 
                                 await hspsMsg.reply({
                                     allowedMentions: { parse: ["roles"] },
-                                    content: "<@&1233351676186853407>",
+                                    content: "<@&1258844664438718484>",
                                     embeds:
                                         [
                                             new EmbedBuilder()
@@ -473,7 +478,7 @@ High Science is requesting all available security to react with ✅ to confirm t
                             case 'security':
                                 await hspsMsg.reply({
                                     allowedMentions: { parse: ["roles"] },
-                                    content: "<@&1233351676186853407>",
+                                    content: "<@&1258844664438718484>",
                                     embeds:
                                         [
                                             new EmbedBuilder()
@@ -528,7 +533,7 @@ Thank you for participating in the raid.`)
 
                                 await hspsMsg.reply({
                                     allowedMentions: { parse: ["roles"] },
-                                    content: "<@&1233351676186853407>",
+                                    content: "<@&1258844664438718484>",
                                     embeds:
                                         [
                                             new EmbedBuilder()
@@ -598,7 +603,7 @@ Thank you for participating in the raid.`)
 
                         await hspsRaidMsg.reply({
                             allowedMentions: { parse: ["roles"] },
-                            content: "<@&1233351676186853407>",
+                            content: "<@&1258844664438718484>",
                             embeds:
                                 [
                                     new EmbedBuilder()
@@ -631,11 +636,11 @@ Thank you for participating in the raid.`)
         } catch (error) {
             console.log(error)
 
-            await interaction.channels.cache.get('1258036097422852248').send({
+            await interaction.client.channels.cache.get('1258036097422852248').send({
                 embeds: [
                     new EmbedBuilder()
                         .setTitle('Bot encountered an error!')
-                        .setDescription(`Someone ran a ${interaction.commandName} ${subCommand ? subCommand : ''} command and it errored!`)
+                        .setDescription(`someone did an oopsie fucking daisy`)
                         .setColor(Colors.Red)
                         .setFields([
                             { name: 'Error message', value: `\`\`\`js\n${error}\`\`\`` }

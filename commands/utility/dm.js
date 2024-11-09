@@ -7,16 +7,11 @@ module.exports = {
         .addUserOption(option => option
             .setName('member')
             .setDescription('The server member you want to DM')
-            .setRequired(false)
+            .setRequired(true)
         )
         .addStringOption(option => option
             .setName('message')
             .setDescription('The message you want to send')
-            .setRequired(false)
-        )
-        .addNumberOption(option => option
-            .setName('userid')
-            .setDescription('The ID of the user you want to DM outside of this server.')
             .setRequired(false)
         )
         .addAttachmentOption(option => option
@@ -33,7 +28,6 @@ module.exports = {
             if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
                 const user = interaction.options.getUser('member');
                 const message = interaction.options.getString('message');
-                const userid = interaction.options.getNumber('userid');
                 const attachment = interaction.options.getAttachment('attachment');
 
                 await interaction.guild.channels.cache.get(process.env.DM_LOG_CHANNEL_ID).send({
@@ -60,8 +54,7 @@ module.exports = {
                         files: attachment ? [attachment] : []
                     });
 
-                    return interaction.editReply({ content: `Sent DM to ${user.tag}!`, ephemeral: true });
-                }
+                    await interaction.editReply({ content: `Sent DM to ${user.tag}!` })
 
                 if (userid) {
                     const user = await interaction.client.users.fetch(userid);
@@ -69,30 +62,44 @@ module.exports = {
                     user.send({
                         content: message ? message : '** **',
                         files: attachment ? [attachment] : []
+
+                    return interaction.guild.channels.cache.get('1258036069572808725').send({
+                        embeds:
+                            [
+                                new EmbedBuilder()
+                                    .setTitle(`${interaction.user.tag} sent a DM to ${user.tag}`)
+                                    .setColor(Colors.Green)
+                                    .setFields([
+                                        { name: 'Text Content', value: message ? message : 'N/A' },
+                                        { name: 'Attachment', value: attachment ? attachment.url : 'N/A' }
+                                    ])
+                                    .setFooter({
+                                        text: interaction.guild.name,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
                     });
 
-                    return interaction.editReply({ content: `Sent DM to ${user.tag}!`, ephemeral: true });
+                } else {
+                    return interaction.editReply({
+                        embeds:
+                            [
+                                new EmbedBuilder()
+                                    .setTitle('Permission Denied!')
+                                    .setDescription('You do not have the required permissions to use this command!')
+                                    .setColor(Colors.Red)
+                                    .setFooter({
+                                        text: interaction.guild.name,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                                    .setTimestamp()
+                            ]
+                    })
                 }
-
-                return interaction.editReply({ content: 'Please provide a user or user ID!', ephemeral: true });
-            } else {
-                return interaction.editReply({
-                    embeds:
-                        [
-                            new EmbedBuilder()
-                                .setTitle('Permission Denied!')
-                                .setDescription('You do not have the required permissions to use this command!')
-                                .setColor(Colors.Red)
-                                .setFooter({
-                                    text: interaction.guild.name,
-                                    iconURL: interaction.guild.iconURL()
-                                })
-                                .setTimestamp()
-                        ]
-                })
             }
         } catch (error) {
-            console.log(error);
+            console.warn(error);
 
             await interaction.guild.channels.cache.get(process.env.ERR_LOG_CHANNEL_ID).send({
                 embeds: [
