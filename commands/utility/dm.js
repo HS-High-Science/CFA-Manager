@@ -28,7 +28,7 @@ module.exports = {
     async execute(interaction) {
         try {
             await interaction.deferReply();
-            const allowedIDs = ["1226408360551645254", "427832787605782549", "1239137720669044766", "1255634139730935860"]
+            const allowedIDs = ["1239137720669044766", "1255634139730935860", "1071373709157351464"] //llasat one is astro
 
             if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
                 const user = interaction.options.getUser('member');
@@ -36,7 +36,7 @@ module.exports = {
                 const userid = interaction.options.getNumber('userid');
                 const attachment = interaction.options.getAttachment('attachment');
 
-                await interaction.guild.channels.cache.get('1258036069572808725').send({
+                await interaction.guild.channels.cache.get(process.env.DM_LOG_CHANNEL_ID).send({
                     embeds:
                         [
                             new EmbedBuilder()
@@ -94,7 +94,7 @@ module.exports = {
         } catch (error) {
             console.log(error);
 
-            await interaction.guild.channels.cache.get('1258036097422852248').send({
+            await interaction.guild.channels.cache.get(process.env.ERR_LOG_CHANNEL_ID).send({
                 embeds: [
                     new EmbedBuilder()
                         .setTitle('Bot encountered an error!')
