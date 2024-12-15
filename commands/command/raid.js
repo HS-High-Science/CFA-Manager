@@ -98,7 +98,7 @@ module.exports = {
             const subCommand = await interaction.options.getSubcommand();
             const uuid = crypto.randomUUID();
             const raidChannel = await interaction.guild.channels.cache.get('1116696712061394974');
-            const hspsRaidChannel = await client.channels.cache.get('1271391431784665163');
+            const hspsRaidChannel = await client.channels.cache.get('1317426517302841424');
 
             switch (subCommand) {
                 case 'schedule':
