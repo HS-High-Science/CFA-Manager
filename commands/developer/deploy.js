@@ -6,7 +6,7 @@ module.exports = {
         .setName('deploy')
         .setDescription('[DEV] Manually deploy/re-deploy commands'),
     async execute(interaction) {
-        const allowedIDs = ["1226408360551645254", "427832787605782549"]
+        const allowedIDs = ["1226408360551645254", "427832787605782549", "597084523338924063"]
         if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
             interaction.reply('`Re-Deploying...`')
 
