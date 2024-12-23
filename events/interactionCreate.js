@@ -18,44 +18,37 @@ module.exports = {
         } catch (error) {
             console.log(error);
 
-            await interaction.channels.cache.get('1235938304990380113').send({
+            await interaction.client.channels.cache.get('1235938304990380113').send({
                 embeds: [
                     new EmbedBuilder()
                         .setTitle('Bot encountered an error!')
-                        .setDescription(`Someone ran a ${interaction.commandName} command and it errored!`)
+                        .setDescription(`Someone ran a /${interaction.commandName} command and it errored! Pls fix!!!!!`)
                         .setColor(Colors.Red)
-                        .setFields([
-                            { name: 'Error message', value: `\`\`\`js\n${error}\`\`\`` }
-                        ])
+                        .setFields({ name: 'Error message', value: `\`\`\`js\n${error}\n\`\`\`` })
+                        .setTimestamp()
                         .setFooter({
-                            text: `Chaos Forces Alliance`,
+                            text: interaction.guild.name,
                             iconURL: interaction.guild.iconURL()
                         })
-                        .setTimestamp()
                 ],
                 allowedMentions: { parse: ["users"] },
-                content: '<@427832787605782549>'
+                content: '<@597084523338924063>' // ping boris
             })
 
-            const replied = interaction.replied
-            const replyData = {
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('Error')
-                        .setDescription('There was an error while executing this command!')
-                        .setColor(Colors.Red)
-                        .setFooter({
-                            text: `Chaos Force Alliance.`,
-                            iconURL: interaction.guild.iconURL()
-                        })
-                        .setTimestamp()
-                ]
-            }
+            const embed = new EmbedBuilder()
+                .setColor(Colors.Red)
+                .setTitle('Error.')
+                .setDescription(`An error has occured while executing this command.\nPing StolarchukBoris if the issue persists.`)
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                });
 
-            if (replied) {
-                return interaction.editReply(replyData);
+            if (interaction.replied || interaction.deferred) {
+                return await interaction.followUp({ embeds: [embed], ephemeral: true });
             } else {
-                return interaction.reply(replyData);
+                return await interaction.reply({ embeds: [embed], ephemeral: true });
             }
         }
     },
