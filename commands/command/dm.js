@@ -12,118 +12,115 @@ module.exports = {
         .addStringOption(option => option
             .setName('message')
             .setDescription('The message you want to send')
-            .setRequired(false)
         )
         .addAttachmentOption(option => option
             .setName('attachment')
             .setDescription('The attachment you want to send')
-            .setRequired(false)
+        )
+        .addBooleanOption(option => option
+            .setName('anonymous')
+            .setDescription('(Defaults to TRUE) Should your name be kept unmentioned in the DM headline?')
         ),
-
     async execute(interaction) {
-        try {
-            await interaction.deferReply();
-            const allowedIDs = ["1239137720669044766", "1255634139730935860", "1071373709157351464"] //llasat one is astro
+        await interaction.deferReply();
+        const allowedIDs = ["1239137720669044766", "1255634139730935860", "1071373709157351464"] //llasat one is astro
 
-            if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
-                const user = interaction.options.getUser('member', true);
-                const message = interaction.options.getString('message', false);
-                const attachment = interaction.options.getAttachment('attachment', false);
+        if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
+            const user = interaction.options.getUser('member', true);
+            const message = interaction.options.getString('message');
+            const attachment = interaction.options.getAttachment('attachment');
+            const anonymous = interaction.options.getBoolean('anonymous') ?? true;
+            const embedToSend = new EmbedBuilder()
+                .setColor(0x2B2D31)
+                .setTitle(`You've Got Mail!`)
+                .setThumbnail(interaction.guild.iconURL())
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                });
 
-                await interaction.guild.channels.cache.get(process.env.DM_LOG_CHANNEL_ID).send({
+            let author = `.`;
+            if (!anonymous) {
+                author = ` (<@${interaction.user.id}>).`;
+            };
+
+            if (attachment && !message) {
+                embedToSend
+                    .setDescription(`You have received a message from the Chaos Forces Alliance leadership${author}`)
+                    .setImage(attachment.url);
+            } else if (!attachment && message) {
+                embedToSend
+                    .setDescription(`You have received a message from the Chaos Forces Alliance leadership${author}\n\n${message}`);
+            } else if (attachment && message) {
+                embedToSend
+                    .setDescription(`You have received a message from the Chaos Forces Alliance leadership${author}\n\n${message}`)
+                    .setImage(attachment.url);
+            } else if (!attachment && !message) {
+                return await interaction.editReply({
                     embeds: [
                         new EmbedBuilder()
-                            .setTitle(`New direct message!`)
-                            .setDescription(`<@${interaction.user.id}> has sent a new DM to <@${user.id}>!`)
-                            .setColor(Colors.Green)
-                            .setFields([
-                                { name: 'Text Content', value: message ? message : 'N/A' },
-                                { name: 'Attachment', value: attachment ? attachment.url : 'N/A' }
-                            ])
+                            .setColor(Colors.Yellow)
+                            .setTitle('Error.')
+                            .setDescription('Cannot send an empty message.')
+                            .setTimestamp()
                             .setFooter({
                                 text: interaction.guild.name,
                                 iconURL: interaction.guild.iconURL()
                             })
-                            .setTimestamp()
                     ]
+                })
+            };
+
+            try {
+                await user.send({
+                    embeds: [embedToSend]
                 });
-
-                if (user) {
-                    await user.send({
-                        content: message ? message : '** **',
-                        files: attachment ? [attachment] : []
-                    })
-                        .then(async () => {
-                            await interaction.editReply({
-                                embeds: [
-                                    new EmbedBuilder()
-                                        .setTitle('Message sent!')
-                                        .setDescription(`Message has been sent to <@${user.id}>!`)
-                                        .setColor(Colors.Green)
-                                        .setFooter({
-                                            text: interaction.guild.name,
-                                            iconURL: interaction.guild.iconURL()
-                                        })
-                                        .setTimestamp()
-                                ]
-                            });
-                        })
-                        .catch(async (_) => {
-                            console.log();
-
-                            return await interaction.editReply({
-                                embeds: [
-                                    new EmbedBuilder()
-                                        .setTitle('Error')
-                                        .setDescription(`An error was encountered while trying to send a message to <@${user.id}>!\nErrors: ${_}`)
-                                        .setColor(Colors.Red)
-                                        .setFooter({
-                                            text: interaction.guild.name,
-                                            iconURL: interaction.guild.iconURL()
-                                        })
-                                        .setTimestamp()
-                                ]
-                            });
-                        });
-                }
-            } else {
-                return interaction.editReply({
-                    embeds:
-                        [
+            } catch (error) {
+                if (error.code === 50007) {
+                    return await interaction.followUp({
+                        embeds: [
                             new EmbedBuilder()
-                                .setTitle('Permission Denied!')
-                                .setDescription('You do not have the required permissions to use this command!')
-                                .setColor(Colors.Red)
+                                .setColor(Colors.Yellow)
+                                .setTitle(`Error.`)
+                                .setDescription(`Cannot send a message to <@${user.id}> because the user has this bot blocked.`)
+                                .setTimestamp()
                                 .setFooter({
                                     text: interaction.guild.name,
                                     iconURL: interaction.guild.iconURL()
                                 })
-                                .setTimestamp()
                         ]
-                })
-            }
-        } catch (error) {
-            console.log(error);
+                    });
+                }
+            };
 
-            await interaction.guild.channels.cache.get(process.env.ERR_LOG_CHANNEL_ID).send({
+            return await interaction.followUp({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Bot encountered an error!')
-                        .setDescription(`Someone ran a ${interaction.commandName} ${subCommand ? subCommand : ''} command and it errored!`)
-                        .setColor(Colors.Red)
-                        .setFields([
-                            { name: 'Error message', value: `\`\`\`js\n${error}\`\`\`` }
-                        ])
+                        .setColor(Colors.Green)
+                        .setTitle(`Direct message sent.`)
+                        .setDescription(`Successfully sent a direct message to <@${user.id}>.`)
+                        .setTimestamp()
                         .setFooter({
-                            text: `Chaos Forces Alliance`,
+                            text: interaction.guild.name,
                             iconURL: interaction.guild.iconURL()
                         })
+                ]
+            });
+        } else {
+            return await interaction.editReply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('Permission Denied!')
+                        .setDescription('You do not have the required permissions to use this command!')
+                        .setColor(Colors.Red)
                         .setTimestamp()
-                ],
-                allowedMentions: { parse: ["users"] }
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        })
+                ]
             })
-
-            return interaction.editReply({ content: 'There was an error while executing this command! Contact Danonienko if error persists.', ephemeral: true });
         }
     }
 }
