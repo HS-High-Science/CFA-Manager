@@ -44,7 +44,8 @@ module.exports = {
                     { name: 'Chaos Forces Win', value: 'chaos' },
                     { name: 'High Science Private Security Win', value: 'security' },
                     { name: 'Stalemate', value: 'stalemate' },
-                    { name: 'ECFR Meltdown', value: 'meltdown' }
+                    { name: 'ECFR Meltdown', value: 'meltdown' },
+                    { name: 'ECFR freezedown', value: 'freezedown' }
                 )
             )
         )
@@ -81,7 +82,7 @@ module.exports = {
         await interaction.deferReply({ ephemeral: true });
 
         const client = await interaction.client;
-        const allowedIDs = ["1157806062070681600", "846692755496763413"];
+        const allowedIDs = ["1157806062070681600", "846692755496763413", "1066470548399468644", "1248632771900084286"]; // raid hosting perms, something else, lead insurgent, strike team
 
         if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
             return await interaction.editReply({
@@ -530,6 +531,33 @@ Thank you for participating in the raid.`)
                         embeds: [outcomeEmbed]
                     })
                     break;
+                case 'freezedown': {
+                    const outcomeEmbed = new EmbedBuilder()
+                        .setTitle('❄️ Raid Concluded - ECFR Freezedown ❄️')
+                        .setDescription(`The raid has ended with the ECFR freezedown!
+The ECFR temperature has reached a point of no return, after which the reactor has turned into a giant black hole and consumed everything!
+Because of that, neither side has won this raid.
+Thank you for participating in the raid.`)
+                        .setColor(Colors.Orange)
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        });
+
+                    await msg.reply({
+                        allowedMentions: { parse: ["roles"] },
+                        content: "<@&1094305864317419632>",
+                        embeds: [outcomeEmbed]
+                    });
+
+                    await hspsMsg.reply({
+                        allowedMentions: { parse: ["roles"] },
+                        content: "<@&1258844664438718484>",
+                        embeds: [outcomeEmbed]
+                    })
+                    break;
+                }
             };
 
             await client.knex("raids")
