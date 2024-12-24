@@ -44,7 +44,7 @@ module.exports = {
                     { name: 'Chaos Forces Win', value: 'chaos' },
                     { name: 'High Science Private Security Win', value: 'security' },
                     { name: 'Stalemate', value: 'stalemate' },
-                    { name: 'ECFR Meltdown', value: 'meltdown' },
+                    { name: 'ECFR Instability', value: 'instability' },
                     { name: 'ECFR freezedown', value: 'freezedown' }
                 )
             )
@@ -505,11 +505,11 @@ Thank you for participating in the raid.`)
                         ]
                     });
                     break;
-                case 'meltdown':
+                case 'instability':
                     const outcomeEmbed = new EmbedBuilder()
-                        .setTitle('🌋 Raid Concluded - ECFR Meltdown 🌋')
-                        .setDescription(`The raid has ended as the ECFR has melted down.
-The ECFR has entered the thermal runaway state, resulting in a meltdown and explosion!
+                        .setTitle('🌋 Raid Concluded - ECFR Instability 🌋')
+                        .setDescription(`The raid has ended as the ECFR has gone unstable.
+The ECFR has entered the thermal runaway state, resulting in loss of stability and detonation!
 Because of that, neither side has won this raid.
 Thank you for participating in the raid.`)
                         .setColor(Colors.Orange)
