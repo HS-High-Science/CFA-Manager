@@ -20,7 +20,8 @@ module.exports = {
                         .setDescription('The type of the training to be scheduled.')
                         .addChoices(
                             { name: 'Essential Training', value: 'et' },
-                            { name: 'Combat Training', value: 'ct' }
+                            { name: 'Combat Training', value: 'ct' },
+                            { name: 'Joint Training', value: 'jt' }
                         )
                         .setRequired(true)
                 )
@@ -122,6 +123,7 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
         const uuid = crypto.randomUUID();
         const trainingChannel = interaction.guild.channels.cache.get('1203320915396530206');
+        const hspsChannel = interaction.client.channels.cache.get('1317426517302841424');
         const errorEmbed = new EmbedBuilder()
             .setColor(Colors.Yellow)
             .setTitle('Error!')
@@ -201,11 +203,38 @@ Breaking any of the rules below can lead to a warning/strike.
                             iconURL: interaction.user.avatarURL()
                         })
                     break;
+
+                case 'jt':
+                    scheduleEmbed = new EmbedBuilder()
+                        .setTitle('Incoming Joint Training Announcement!')
+                        .setColor("#2B2D31")
+                        .setDescription(`## A CFA x HSPS Joint Training has been scheduled on <t:${time}:F>.
+Before joining at the designated time, please review all the training rules listed below. Once done, kindly react with ✅ to confirm your attendance. 
+Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the training you reacted to.
+Breaking any of the rules below can lead to a warning/strike.
+## Joint Training Rules
+* When you join, enter the <#1320466795882217552>. After that, STS at the spawn and await instructions from the host.
+* Do not go AFK or/and leave without notifying the host. Don't worry: disconnecting due to an internet/electricity problem will not get you punished if you notify the host about that issue.
+* Always listen to the orders issued by the host.
+* Do not harass security.
+* Use avatars that do not significantly alter your hitboxes.
+* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, ${interaction.member.nickname}.")`)
+                        .setFields(
+                            { name: "Training Host", value: `<@${interaction.user.id}>`, inline: true },
+                            { name: 'Training ID', value: `${uuid}`, inline: true }
+                        )
+                        .setThumbnail(interaction.guild.iconURL())
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.user.avatarURL()
+                        });
+                    break;
             };
 
             const message = await trainingChannel.send({
                 allowedMentions: { parse: ["roles"] },
-                content: "<@&1208467485104406619>",
+                content: "<@&1051414553591824428>",
                 embeds: [scheduleEmbed]
             });
 
@@ -220,6 +249,40 @@ Breaking any of the rules below can lead to a warning/strike.
                     training_type: type,
                     is_concluded: false
                 });
+
+            if (type === 'jt') {
+                scheduleEmbed = new EmbedBuilder()
+                    .setTitle('Incoming Joint Training Announcement!')
+                    .setColor("#2B2D31")
+                    .setDescription(`## An HSPS x CFA Joint Training has been scheduled on <t:${time}:F>.
+Before joining at the designated time, please review all the training rules listed below. Once done, kindly react with ✅ to confirm your attendance. 
+Breaking any of the rules below can lead to a warning/strike.
+## Joint Training Rules
+* Do not go AFK or/and leave without notifying the host. Don't worry: disconnecting due to an internet/electricity problem will not get you punished if you notify the host about that issue.
+* Always listen to the orders issued by the host.
+* Use avatars that do not significantly alter your hitboxes.
+* Do not talk unless allowed to, however, you can ask for a permission to speak.`)
+                    .setFields(
+                        { name: "Training Host", value: `<@${interaction.user.id}>`, inline: true },
+                        { name: 'Training ID', value: `${uuid}`, inline: true }
+                    )
+                    .setThumbnail(interaction.guild.iconURL())
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.user.avatarURL()
+                    });
+
+                const hspsMessage = await hspsChannel.send({
+                    embeds: [scheduleEmbed],
+                    allowedMentions: { parse: 'roles' },
+                    content: '<@&1258844608411205793>'
+                });
+
+                await client.knex('trainings')
+                    .update({ hsps_message_id: hspsMessage.id })
+                    .where({ training_id: uuid });
+            }
 
             return await interaction.editReply({
                 embeds: [
@@ -254,28 +317,42 @@ Breaking any of the rules below can lead to a warning/strike.
 
             const msgID = training.message_id;
             const trainingMsg = await trainingChannel.messages.fetch(`${msgID}`);
+            const startEmbed = new EmbedBuilder()
+                .setColor(Colors.DarkGreen)
+                .setThumbnail(interaction.guild.iconURL())
+                .setTitle('Chaos Forces Alliance - Training Commencing')
+                .setDescription(`A scheduled training is now commencing. Please ensure that you;
+- STS at the spawn.
+- Await host's instructions.
+- Have no avatar that massively alters your hitboxes.
+- Remain quiet unless you're requesting a permission to speak.
+- Show your best!
+
+## Join the Training [here](${venueLink}).`)
+                .setFields({ name: 'Training ID', value: `${trainingID} ` })
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.user.avatarURL()
+                })
 
             await trainingMsg.reply({
                 allowedMentions: { parse: ["roles"] },
                 content: '<@&1208467485104406619>',
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(Colors.DarkGreen)
-                        .setThumbnail(interaction.guild.iconURL())
-                        .setTitle('Chaos Forces Alliance - Training Commencing')
-                        .setDescription(`A scheduled training is now commencing. Please ensure that you;
-- STS at the front lines.
-- Have no avatar that massively alters your hitboxes.
-- Remain quiet unless you're asking a question.
-
-## Join the Training [here](${venueLink}).`)
-                        .setTimestamp()
-                        .setFooter({
-                            text: `Training ID: ${trainingID}.`,
-                            iconURL: interaction.user.avatarURL()
-                        })
-                ]
+                embeds: [startEmbed]
             });
+
+            if (training.type === 'jt') {
+                const hspsMsgId = training.hsps_message_id;
+                const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
+
+                await hspsTrainingMsg.reply({
+                    allowedMentions: { parse: ["roles"] },
+                    content: '<@&1208467485104406619>',
+                    embeds: [startEmbed]
+                });
+            };
+
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
@@ -364,25 +441,35 @@ If you didn't make it in time, **attend another training.**`)
 
             const msgID = training.message_id;
             const msg = await trainingChannel.messages.fetch(`${msgID}`);
+            const cancelEmbed = new EmbedBuilder()
+                .setColor(Colors.Red)
+                .setTitle('Training Cancelled!')
+                .setDescription(`The above training has been canceled.
+We sincerely apologize for any inconvenience that this might have caused.`)
+                .addFields({ name: "Reason", value: interaction.options.getString("reason", true) })
+                .setThumbnail(interaction.guild.iconURL())
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                });
 
             await msg.reply({
                 allowedMentions: { parse: ["roles"] },
                 content: "<@&1208467485104406619>",
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(Colors.Red)
-                        .setTitle('Training Cancelled!')
-                        .setDescription(`The above training has been canceled.
-We sincerely apologize for any inconvenience that this might have caused.`)
-                        .addFields({ name: "Reason", value: interaction.options.getString("reason", true) })
-                        .setThumbnail(interaction.guild.iconURL())
-                        .setTimestamp()
-                        .setFooter({
-                            text: interaction.guild.name,
-                            iconURL: interaction.guild.iconURL()
-                        })
-                ]
+                embeds: [cancelEmbed]
             });
+
+            if (training.type === 'jt') {
+                const hspsMsgId = training.hsps_message_id;
+                const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
+
+                await hspsTrainingMsg.reply({
+                    allowedMentions: { parse: ["roles"] },
+                    content: '<@&1208467485104406619>',
+                    embeds: [cancelEmbed]
+                });
+            };
 
             await client.knex("trainings")
                 .where("training_id", trainingID)
@@ -427,20 +514,31 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                 .update({ is_concluded: true })
                 .where({ training_id: trainingID });
 
+            const concludeEmbed = new EmbedBuilder()
+                .setColor(Colors.Blurple)
+                .setTitle('Training Concluded')
+                .setDescription(`The above training has been concluded.\nThank you for attending!`)
+                .setThumbnail(interaction.guild.iconURL())
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                });
+
             await msg.reply({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(Colors.Blurple)
-                        .setTitle('Training Concluded')
-                        .setDescription(`The above training has been concluded.\nThank you for attending!`)
-                        .setThumbnail(interaction.guild.iconURL())
-                        .setTimestamp()
-                        .setFooter({
-                            text: interaction.guild.name,
-                            iconURL: interaction.guild.iconURL()
-                        })
-                ]
+                embeds: [concludeEmbed]
             });
+
+            if (training.type === 'jt') {
+                const hspsMsgId = training.hsps_message_id;
+                const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
+
+                await hspsTrainingMsg.reply({
+                    allowedMentions: { parse: ["roles"] },
+                    content: '<@&1208467485104406619>',
+                    embeds: [concludeEmbed]
+                });
+            };
 
             return await interaction.editReply({
                 embeds: [
@@ -496,21 +594,32 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                 .update({ training_date: newTime })
                 .where({ training_id: trainingID });
 
-            await msg.reply({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(Colors.Blurple)
-                        .setTitle('Training Time Updated')
-                        .setDescription(`The above training's time has been changed. The training will now be on <t:${newTime}:f>.
+            const updateEmbed = new EmbedBuilder()
+                .setColor(Colors.Blurple)
+                .setTitle('Training Time Updated')
+                .setDescription(`The above training's time has been changed. The training will now be on <t:${newTime}:f>.
 Please adjust your availability accordingly.`)
-                        .setThumbnail(interaction.guild.iconURL())
-                        .setTimestamp()
-                        .setFooter({
-                            text: interaction.guild.name,
-                            iconURL: interaction.guild.iconURL()
-                        })
-                ]
+                .setThumbnail(interaction.guild.iconURL())
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                });
+
+            await msg.reply({
+                embeds: [updateEmbed]
             });
+
+            if (training.type === 'jt') {
+                const hspsMsgId = training.hsps_message_id;
+                const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
+
+                await hspsTrainingMsg.reply({
+                    allowedMentions: { parse: ["roles"] },
+                    content: '<@&1208467485104406619>',
+                    embeds: [updateEmbed]
+                });
+            };
 
             return await interaction.editReply({
                 embeds: [
@@ -524,7 +633,7 @@ Please adjust your availability accordingly.`)
                             iconURL: interaction.guild.iconURL()
                         })
                 ]
-            })
-        }
-    }
-}
+            });
+        };
+    },
+};
