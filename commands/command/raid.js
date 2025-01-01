@@ -383,15 +383,16 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                 .select("*")
                 .where("raid_id", raidID)
                 .first();
+
+            if (!raid) {
+                return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid with ID \`${raidID}\` has been found in the database.`)] });
+            };
+
             const isConcluded = raid.is_concluded;
             const msgID = raid.cfa_message_id;
             const msg = await raidChannel.messages.fetch(`${msgID}`);
             const hspsMsgID = raid.hsps_message_id;
             const hspsMsg = await hspsRaidChannel.messages.fetch(`${hspsMsgID}`);
-
-            if (!raid) {
-                return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid with ID \`${raidID}\` has been found in the database.`)] });
-            };
 
             if (isConcluded === 1) {
                 return await interaction.editReply({ embeds: [errorEmbed.setDescription(`This raid is already concluded.`)] });

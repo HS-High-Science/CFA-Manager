@@ -47,7 +47,7 @@ module.exports = {
         .addSubcommand(subcommand => subcommand
             .setName('fromid')
             .setDescription('Retrieve a formal warning by its ID.')
-            .addUserOption(option => option
+            .addStringOption(option => option
                 .setName('warning_id')
                 .setDescription('The ID of the warning to be retrieved.')
                 .setRequired(true)
@@ -60,6 +60,8 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
+            const warnLogsChannel = await interaction.client.channels.cache.get(process.env.WARNING_LOG_CHANNEL_ID);
+
             if (subcommand === 'issue') {
                 const uuid = crypto.randomUUID();
                 const user = interaction.options.getUser('member', true);
@@ -74,14 +76,14 @@ module.exports = {
                         responsible_hr: interaction.user.id,
                         date_issued: Math.round(Date.now() / 1000)
                     });
-                
+
                 const userEmbed = new EmbedBuilder()
                     .setTitle('Formal warning notice')
                     .setDescription('You have been issued a formal warning by CFA Command.\nIt can most likely be appealed in the [Internal Relations Department Discord](https://discord.gg/xsB3xPnsVG).')
                     .setColor(Colors.Red)
                     .setFields(
-                        { name: 'Reason', value: reason, inline: true },
-                        { name: 'Warning ID', value: uuid, inline: true }
+                        { name: 'Reason', value: reason },
+                        { name: 'Warning ID', value: uuid }
                     )
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
@@ -112,14 +114,14 @@ module.exports = {
 
                 try {
                     await user.send({ embeds: [userEmbed] });
-                    await interaction.guild.channels.cache.get(process.env.WARNING_LOG_CHANNEL_ID).send({ embeds: [logEmbed] });
+                    await warnLogsChannel.send({ embeds: [logEmbed] });
                 } catch (error) {
                     if (error.code === 50007) {
-                        return await interaction.guild.channels.cache.get(process.env.WARNING_LOG_CHANNEL_ID).send({
+                        await warnLogsChannel.send({
                             content: '## ⚠️ Unable to DM the user about the warning. Please inform them manually.',
                             embeds: [logEmbed]
                         });
-                    }
+                    };
                 };
 
                 return await interaction.editReply({
@@ -164,17 +166,18 @@ module.exports = {
                     })
                 };
 
-                const warnReason = warning.reason;
+                const warningReason = warning.reason;
+                const userId = strike.rebel_id;
 
                 await interaction.client.knex('warns')
                     .del()
                     .where('warning_id', id);
 
                 const userEmbed = new EmbedBuilder()
-                    .setTitle('Formal warning notice')
+                    .setTitle('Formal Warning Notice')
                     .setDescription(`A formal warning with ID \`${id}\` has been removed from your record by CFA Command.`)
                     .setColor(Colors.Green)
-                    .setFields({ name: 'Original Warning Reason', value: warnReason })
+                    .setFields({ name: 'Original Warning Reason', value: warningReason })
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
                     .setFooter({
@@ -183,10 +186,10 @@ module.exports = {
                     });
 
                 const logEmbed = new EmbedBuilder()
-                    .setTitle(`Warning removed!`)
-                    .setDescription(`<@${interaction.user.id}> has removed a formal warning from <@${user.id}>'s record.`)
+                    .setTitle(`Formal Warning Removed!`)
+                    .setDescription(`<@${interaction.user.id}> has removed a formal warning from <@${userId}>'s record.`)
                     .setColor(Colors.Green)
-                    .setFields({ name: 'Original Warning Reason', value: warnReason })
+                    .setFields({ name: 'Original Warning Reason', value: warningReason })
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
                     .setFooter({
@@ -196,26 +199,16 @@ module.exports = {
 
                 if (reason) {
                     logEmbed.addFields({ name: 'Warning Removal Reason', value: reason });
-                    userEmbed.addFields({ name: 'Warning Removal Reason', value: reason });;
+                    userEmbed.addFields({ name: 'Warning Removal Reason', value: reason });
                 };
 
-                try {
-                    await user.send({ embeds: [userEmbed] });
-                    await interaction.guild.channels.cache.get(process.env.WARNING_LOG_CHANNEL_ID).send({ embeds: [logEmbed] });
-                } catch (error) {
-                    if (error.code === 50007) {
-                        return await interaction.guild.channels.cache.get(process.env.WARNING_LOG_CHANNEL_ID).send({
-                            content: '## ⚠️ Unable to DM the user about the warning. Please inform them manually.',
-                            embeds: [logEmbed]
-                        });
-                    }
-                };
+                await warnLogsChannel.send({ embeds: [logEmbed] });
 
-                return await interaction.editReply({
+                await interaction.editReply({
                     embeds: [
                         new EmbedBuilder()
-                            .setTitle('Warning removed!')
-                            .setDescription(`Successfully removed a formal warning from <@${user.id}>'s record.`)
+                            .setTitle('Formal Warning Removed!')
+                            .setDescription(`Successfully removed a formal warning from <@${userId}>'s record.`)
                             .setColor(Colors.Green)
                             .setFields({ name: 'Removal Reason', value: reason })
                             .setThumbnail(interaction.guild.iconURL())
@@ -226,6 +219,17 @@ module.exports = {
                             })
                     ]
                 });
+
+                const user = await interaction.client.users.cache.get(userId);
+                if (!user) return;
+
+                try {
+                    await user.send({ embeds: [userEmbed] });
+                } catch (error) {
+                    if (error.code === 50007) {
+                        return await warnLogsChannel.send({ content: '## ⚠️ Unable to DM the user about the warning. Please inform them manually.' });
+                    };
+                };
             } else if (subcommand === 'fetch') {
                 const user = interaction.options.getUser('user', true);
                 const warnings = await interaction.client.knex('warns')
@@ -257,7 +261,7 @@ module.exports = {
                     embeds: [
                         new EmbedBuilder()
                             .setColor(Colors.Aqua)
-                            .setTitle(`Found ${warnings.length} formal warning(s) for ${uesr.displayName}`)
+                            .setTitle(`Found ${warnings.length} formal warning(s) for <@${user.id}>`)
                             .setDescription(`${desc}`)
                             .setThumbnail(interaction.guild.iconURL())
                             .setTimestamp()
@@ -266,7 +270,7 @@ module.exports = {
                                 iconURL: interaction.guild.iconURL()
                             })
                     ]
-                })
+                });
             } else if (subcommand === 'fromid') {
                 const id = interaction.options.getString('id', true);
 

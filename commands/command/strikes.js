@@ -47,7 +47,7 @@ module.exports = {
         .addSubcommand(subcommand => subcommand
             .setName('fromid')
             .setDescription('Retrieve a strike by its ID.')
-            .addUserOption(option => option
+            .addStringOption(option => option
                 .setName('strike_id')
                 .setDescription('The ID of the strike to be retrieved.')
                 .setRequired(true)
@@ -60,6 +60,8 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
+            const strikeLogsChannel = await interaction.client.channels.cache.get(process.env.STRIKE_LOG_CHANNEL_ID);
+
             if (subcommand === 'issue') {
                 const uuid = crypto.randomUUID();
                 const user = interaction.options.getUser('member', true);
@@ -80,8 +82,8 @@ module.exports = {
                     .setDescription('You have been issued a strike by CFA Command.\nIt can most likely be appealed in the [Internal Relations Department Discord](https://discord.gg/xsB3xPnsVG).')
                     .setColor(Colors.Red)
                     .setFields(
-                        { name: 'Reason', value: reason, inline: true },
-                        { name: 'Strike ID', value: uuid, inline: true }
+                        { name: 'Reason', value: reason },
+                        { name: 'Strike ID', value: uuid }
                     )
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
@@ -112,14 +114,14 @@ module.exports = {
 
                 try {
                     await user.send({ embeds: [userEmbed] });
-                    await interaction.guild.channels.cache.get(process.env.STRIKE_LOG_CHANNEL_ID).send({ embeds: [logEmbed] });
+                    await strikeLogsChannel.send({ embeds: [logEmbed] });
                 } catch (error) {
                     if (error.code === 50007) {
-                        return await interaction.guild.channels.cache.get(process.env.STRIKE_LOG_CHANNEL_ID).send({
+                        await strikeLogsChannel.send({
                             content: '## ⚠️ Unable to DM the user about the strike. Please inform them manually.',
                             embeds: [logEmbed]
                         });
-                    }
+                    };
                 };
 
                 return await interaction.editReply({
@@ -165,6 +167,7 @@ module.exports = {
                 };
 
                 const strikeReason = strike.reason;
+                const userId = strike.rebel_id;
 
                 await interaction.client.knex('strikes')
                     .del()
@@ -184,7 +187,7 @@ module.exports = {
 
                 const logEmbed = new EmbedBuilder()
                     .setTitle(`Strike removed!`)
-                    .setDescription(`<@${interaction.user.id}> has removed a strike from <@${user.id}>'s record.`)
+                    .setDescription(`<@${interaction.user.id}> has removed a strike from <@${userId}>'s record.`)
                     .setColor(Colors.Green)
                     .setFields({ name: 'Original Strike Reason', value: strikeReason })
                     .setThumbnail(interaction.guild.iconURL())
@@ -196,22 +199,12 @@ module.exports = {
 
                 if (reason) {
                     logEmbed.addFields({ name: 'Strike Removal Reason', value: reason });
-                    userEmbed.addFields({ name: 'Strike Removal Reason', value: reason });;
+                    userEmbed.addFields({ name: 'Strike Removal Reason', value: reason });
                 };
 
-                try {
-                    await user.send({ embeds: [userEmbed] });
-                    await interaction.guild.channels.cache.get(process.env.STRIKE_LOG_CHANNEL_ID).send({ embeds: [logEmbed] });
-                } catch (error) {
-                    if (error.code === 50007) {
-                        return await interaction.guild.channels.cache.get(process.env.STRIKE_LOG_CHANNEL_ID).send({
-                            content: '## ⚠️ Unable to DM the user about the strike. Please inform them manually.',
-                            embeds: [logEmbed]
-                        });
-                    }
-                };
+                await strikeLogsChannel.send({ embeds: [logEmbed] });
 
-                return await interaction.editReply({
+                await interaction.editReply({
                     embeds: [
                         new EmbedBuilder()
                             .setTitle('Strike removed!')
@@ -226,6 +219,17 @@ module.exports = {
                             })
                     ]
                 });
+
+                const user = await interaction.client.users.cache.get(userId);
+                if (!user) return;
+
+                try {
+                    await user.send({ embeds: [userEmbed] });
+                } catch (error) {
+                    if (error.code === 50007) {
+                        return await strikeLogsChannel.send({ content: '## ⚠️ Unable to DM the user about the strike. Please inform them manually.' });
+                    };
+                };
             } else if (subcommand === 'fetch') {
                 const user = interaction.options.getUser('user', true);
                 const strikes = await interaction.client.knex('strikes')
@@ -257,7 +261,7 @@ module.exports = {
                     embeds: [
                         new EmbedBuilder()
                             .setColor(Colors.Aqua)
-                            .setTitle(`Found ${strikes.length} strike(s) for ${uesr.displayName}`)
+                            .setTitle(`Found ${strikes.length} strike(s) for <@${user.id}>`)
                             .setDescription(`${desc}`)
                             .setThumbnail(interaction.guild.iconURL())
                             .setTimestamp()
@@ -266,7 +270,7 @@ module.exports = {
                                 iconURL: interaction.guild.iconURL()
                             })
                     ]
-                })
+                });
             } else if (subcommand === 'fromid') {
                 const id = interaction.options.getString('id', true);
 

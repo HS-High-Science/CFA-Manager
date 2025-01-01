@@ -38,7 +38,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor(Colors.Red)
                 .setTitle('Error.')
-                .setDescription(`An error has occured while executing this command.\nPing StolarchukBoris if the issue persists.`)
+                .setDescription(`An error has occured while executing this command. The developers have been notified about this issue.`)
                 .setTimestamp()
                 .setFooter({
                     text: interaction.guild.name,
