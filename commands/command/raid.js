@@ -397,104 +397,89 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                 return await interaction.editReply({ embeds: [errorEmbed.setDescription(`This raid is already concluded.`)] });
             };
 
+            await client.knex("raids")
+                .update({ is_concluded: true })
+                .where({ raid_id: raidID });
+
             const outcome = interaction.options.getString("outcome", true);
+            let outcomeEmbed;
+            let hspsOutcomeEmbed;
 
             switch (outcome) {
                 case 'chaos':
-                    await msg.reply({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setTitle('⭐ Raid Concluded - Chaos Forces Victory ⭐')
-                                .setDescription(`The raid has been concluded with a victory of Chaos Forces! \nThe CPUF has been destroyed and the truth about High Science has been revealed. \nThank you for participating in the raid.`)
-                                .setColor(Colors.Green)
-                                .setTimestamp()
-                                .setFooter({
-                                    text: interaction.guild.name,
-                                    iconURL: interaction.guild.iconURL()
-                                })
-                        ]
-                    });
+                    outcomeEmbed = new EmbedBuilder()
+                        .setTitle('⭐ Raid Concluded - Chaos Forces Victory ⭐')
+                        .setDescription(`The raid has been concluded with a victory of Chaos Forces! \nThe CPUF has been destroyed and the truth about High Science has been revealed. \nThank you for participating in the raid.`)
+                        .setColor(Colors.Green)
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        });
 
-                    await hspsMsg.reply({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setTitle('💀 Raid Concluded - Chaos Forces Victory 💾')
-                                .setDescription(`The raid has been concluded, HSPS have lost! \nThe CPUF has been destroyed and the classified data has been breached. \nThank you for participating in the raid.`)
-                                .setColor(Colors.Red)
-                                .setTimestamp()
-                                .setFooter({
-                                    text: interaction.guild.name,
-                                    iconURL: interaction.guild.iconURL()
-                                })
-                        ]
-                    });
+                    hspsOutcomeEmbed = new EmbedBuilder()
+                        .setTitle('💀 Raid Concluded - Chaos Forces Victory 💾')
+                        .setDescription(`The raid has been concluded, HSPS have lost! \nThe CPUF has been destroyed and the classified data has been breached. \nThank you for participating in the raid.`)
+                        .setColor(Colors.Red)
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        });
+                        
                     break;
                 case 'security':
-                    await msg.reply({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setTitle('🛡️ Raid Concluded - HSPS Victory 🛡️')
-                                .setDescription(`The raid has been concluded, Chaos Forces have lost! \nThe CPUF is now secured and the classified data is safe. \nThank you for participating in the raid.`)
-                                .setColor(Colors.Red)
-                                .setTimestamp()
-                                .setFooter({
-                                    text: interaction.guild.name,
-                                    iconURL: interaction.guild.iconURL()
-                                })
-                        ]
-                    });
+                    outcomeEmbed = new EmbedBuilder()
+                        .setTitle('🛡️ Raid Concluded - HSPS Victory 🛡️')
+                        .setDescription(`The raid has been concluded, Chaos Forces have lost! \nThe CPUF is now secured and the classified data is safe. \nThank you for participating in the raid.`)
+                        .setColor(Colors.Red)
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        });
 
-                    await hspsMsg.reply({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setTitle('⭐ Raid Concluded - HSPS Victory ⭐')
-                                .setDescription(`The raid has been concluded with a victory of HSPS! \nThe CPUF is now secured and the classified data is safe. \nThank you for participating in the raid.`)
-                                .setColor(Colors.Green)
-                                .setTimestamp()
-                                .setFooter({
-                                    text: interaction.guild.name,
-                                    iconURL: interaction.guild.iconURL()
-                                })
-                        ]
-                    });
+                    hspsOutcomeEmbed = new EmbedBuilder()
+                        .setTitle('⭐ Raid Concluded - HSPS Victory ⭐')
+                        .setDescription(`The raid has been concluded with a victory of HSPS! \nThe CPUF is now secured and the classified data is safe. \nThank you for participating in the raid.`)
+                        .setColor(Colors.Green)
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        });
+
                     break;
                 case 'stalemate':
-                    await msg.reply({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setTitle('⛓️ Raid Concluded - Stalemate ⛓️')
-                                .setDescription(`The raid has been concluded with a stalemate.
+                    outcomeEmbed = new EmbedBuilder()
+                        .setTitle('⛓️ Raid Concluded - Stalemate ⛓️')
+                        .setDescription(`The raid has been concluded with a stalemate.
 Chaos Forces were able to destroy the facility, but HSPS have managed to protect the data!
 With no data, we cannot reveal the truth about High Science.
 Thank you for participating in the raid.`)
-                                .setColor(Colors.Aqua)
-                                .setTimestamp()
-                                .setFooter({
-                                    text: interaction.guild.name,
-                                    iconURL: interaction.guild.iconURL()
-                                })
-                        ]
-                    });
+                        .setColor(Colors.Aqua)
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        });
 
-                    await hspsMsg.reply({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setTitle('⛓️ Raid Concluded - Stalemate ⛓️')
-                                .setDescription(`The raid has been concluded with a stalemate.
+                    hspsOutcomeEmbed = new EmbedBuilder()
+                        .setTitle('⛓️ Raid Concluded - Stalemate ⛓️')
+                        .setDescription(`The raid has been concluded with a stalemate.
 HSPS have successfully protected the data, but Chaos Forces have destroyed the facility!
 Even though the facility has been destroyed, the data is secure, rendering Chaos Forces unable to reveal the truth.
 Thank you for participating in the raid.`)
-                                .setColor(Colors.Aqua)
-                                .setTimestamp()
-                                .setFooter({
-                                    text: interaction.guild.name,
-                                    iconURL: interaction.guild.iconURL()
-                                })
-                        ]
-                    });
+                        .setColor(Colors.Aqua)
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        });
+
                     break;
                 case 'instability':
-                    const outcomeEmbed = new EmbedBuilder()
+                    outcomeEmbed = new EmbedBuilder()
                         .setTitle('🌋 Raid Concluded - ECFR Instability 🌋')
                         .setDescription(`The raid has ended as the ECFR has gone unstable.
 The ECFR has entered the thermal runaway state, resulting in loss of stability and detonation!
@@ -507,16 +492,11 @@ Thank you for participating in the raid.`)
                             iconURL: interaction.guild.iconURL()
                         });
 
-                    await msg.reply({
-                        embeds: [outcomeEmbed]
-                    });
+                    hspsOutcomeEmbed = outcomeEmbed;
 
-                    await hspsMsg.reply({
-                        embeds: [outcomeEmbed]
-                    })
                     break;
-                case 'freezedown': {
-                    const outcomeEmbed = new EmbedBuilder()
+                case 'freezedown':
+                    outcomeEmbed = new EmbedBuilder()
                         .setTitle('❄️ Raid Concluded - ECFR Freezedown ❄️')
                         .setDescription(`The raid has ended with the ECFR freezedown!
 The ECFR temperature has reached a point of no return, after which the reactor has turned into a giant black hole and consumed everything!
@@ -529,20 +509,13 @@ Thank you for participating in the raid.`)
                             iconURL: interaction.guild.iconURL()
                         });
 
-                    await msg.reply({
-                        embeds: [outcomeEmbed]
-                    });
-
-                    await hspsMsg.reply({
-                        embeds: [outcomeEmbed]
-                    })
+                    hspsOutcomeEmbed = outcomeEmbed;
+                    
                     break;
-                }
             };
 
-            await client.knex("raids")
-                .update({ is_concluded: true })
-                .where({ raid_id: raidID });
+            await msg.reply({ embeds: [outcomeEmbed] });
+            await hspsMsg.reply({ embeds: [hspsOutcomeEmbed] });
 
             return await interaction.editReply({
                 embeds: [
