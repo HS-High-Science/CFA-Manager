@@ -402,8 +402,6 @@ We sincerely apologize for any inconvenience that this might have caused.`)
             switch (outcome) {
                 case 'chaos':
                     await msg.reply({
-                        allowedMentions: { parse: ["roles"] },
-                        content: "<@&1094305864317419632>",
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('⭐ Raid Concluded - Chaos Forces Victory ⭐')
@@ -418,8 +416,6 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                     });
 
                     await hspsMsg.reply({
-                        allowedMentions: { parse: ["roles"] },
-                        content: "<@&1258844664438718484>",
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('💀 Raid Concluded - Chaos Forces Victory 💾')
@@ -435,8 +431,6 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                     break;
                 case 'security':
                     await msg.reply({
-                        allowedMentions: { parse: ["roles"] },
-                        content: "<@&1094305864317419632>",
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('🛡️ Raid Concluded - HSPS Victory 🛡️')
@@ -451,8 +445,6 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                     });
 
                     await hspsMsg.reply({
-                        allowedMentions: { parse: ["roles"] },
-                        content: "<@&1258844664438718484>",
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('⭐ Raid Concluded - HSPS Victory ⭐')
@@ -468,8 +460,6 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                     break;
                 case 'stalemate':
                     await msg.reply({
-                        allowedMentions: { parse: ["roles"] },
-                        content: "<@&1094305864317419632>",
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('⛓️ Raid Concluded - Stalemate ⛓️')
@@ -487,8 +477,6 @@ Thank you for participating in the raid.`)
                     });
 
                     await hspsMsg.reply({
-                        allowedMentions: { parse: ["roles"] },
-                        content: "<@&1258844664438718484>",
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('⛓️ Raid Concluded - Stalemate ⛓️')
@@ -520,14 +508,10 @@ Thank you for participating in the raid.`)
                         });
 
                     await msg.reply({
-                        allowedMentions: { parse: ["roles"] },
-                        content: "<@&1094305864317419632>",
                         embeds: [outcomeEmbed]
                     });
 
                     await hspsMsg.reply({
-                        allowedMentions: { parse: ["roles"] },
-                        content: "<@&1258844664438718484>",
                         embeds: [outcomeEmbed]
                     })
                     break;
@@ -546,14 +530,10 @@ Thank you for participating in the raid.`)
                         });
 
                     await msg.reply({
-                        allowedMentions: { parse: ["roles"] },
-                        content: "<@&1094305864317419632>",
                         embeds: [outcomeEmbed]
                     });
 
                     await hspsMsg.reply({
-                        allowedMentions: { parse: ["roles"] },
-                        content: "<@&1258844664438718484>",
                         embeds: [outcomeEmbed]
                     })
                     break;
