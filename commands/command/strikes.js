@@ -19,7 +19,7 @@ module.exports = {
             )
             .addAttachmentOption(option => option
                 .setName('attachment')
-                .setDescription('The attachment to be included with the strike message.')
+                .setDescription('The IMAGE attachment to be included with the strike message.')
             )
         )
         .addSubcommand(subcommand => subcommand
@@ -272,7 +272,7 @@ module.exports = {
                     ]
                 });
             } else if (subcommand === 'fromid') {
-                const id = interaction.options.getString('id', true);
+                const id = interaction.options.getString('strike_id', true);
 
                 const strike = await interaction.client.knex('strikes')
                     .select('*')
