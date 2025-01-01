@@ -10,7 +10,7 @@ module.exports = {
         await interaction.deferReply();
 
         if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
-            await interaction.followUp('`Pulling...`')
+            await interaction.followUp('`Pulling...`');
 
             const { stdout, stderr } = spawn('git pull', { shell: true });
 
