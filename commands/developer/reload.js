@@ -18,37 +18,68 @@ module.exports = {
         if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
             const commandName = interaction.options.getString('command', true).toLowerCase();
             const command = interaction.client.commands.get(commandName);
+            const commandPaths = ['../../command', '../../developer', '../../utility'];
 
             if (!command) {
                 return await interaction.editReply(`There is no command with name \`${commandName}\`!`);
-            }
+            };
 
-            delete require.cache[require.resolve(`./${command.data.name}.js`)]
+            for (const path of commandPaths) {
+                try {
+                    delete require.cache[require.resolve(`${path}/${command.data.name}.js`)];
 
-            try {
-                const newCommand = require(`./${command.data.name}.js`);
-                interaction.client.commands.set(newCommand.data.name, newCommand);
-                return await interaction.editReply({ content: `Command ${newCommand.data.name} reloaded!` });
-            } catch (error) {
-                console.error(error);
+                    try {
+                        const newCommand = require(`${path}/${command.data.name}.js`);
 
-                return await interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor(Colors.Red)
-                            .setTitle('Reload Failed')
-                            .setDescription(`The program ran into error when trying to reload /${command.data.name} command`)
-                            .setFields({ name: 'Error', value: `\`\`\`\n${error}\`\`\`` })
-                            .setTimestamp()
-                            .setFooter({
-                                text: interaction.guild.name,
-                                iconURL: interaction.guild.iconURL()
-                            })
-                    ]
-                });
-            }
+                        await interaction.client.commands.set(newCommand.data.name, newCommand);
+                        return await interaction.editReply({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setColor(Colors.Green)
+                                    .setTitle('Reload Successful')
+                                    .setDescription(`Successfully reloaded \`${command.data.name}\` command.`)
+                                    .setTimestamp()
+                                    .setFooter({
+                                        text: interaction.guild.name,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                            ]
+                        });
+                    } catch (error) {
+                        console.error(error);
+                        return await interaction.editReply({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setColor(Colors.Red)
+                                    .setTitle('Reload Error')
+                                    .setDescription(`An error has occured while reloading \`${command.data.name}\` command.`)
+                                    .setFields({ name: 'Error message', value: `\`\`\`js\n${error}\n\`\`\`` })
+                                    .setTimestamp()
+                                    .setFooter({
+                                        text: interaction.guild.name,
+                                        iconURL: interaction.guild.iconURL()
+                                    })
+                            ]
+                        });
+                    };
+                } catch {
+                    continue;
+                };
+            };
         } else {
-            return await interaction.editReply({ content: 'You do not have permission to use this command!', ephemeral: true });
-        }
+            return await interaction.editReply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setTitle('Access Denied')
+                        .setDescription('You do not have the required permissions to run this command.')
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        })
+                ]
+            });
+        };
     }
-}
+};
