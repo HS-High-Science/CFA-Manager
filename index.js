@@ -54,7 +54,7 @@ try {
 } catch (error) {
     console.log(error);
 
-    new Client().channels.fetch('1258036097422852248').then(channel => {
+    new Client({ intents: [GatewayIntentBits.Guilds] }).channels.fetch('1258036097422852248').then(channel => {
         channel.send({
             embeds:
                 [
