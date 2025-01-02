@@ -167,7 +167,7 @@ module.exports = {
                 };
 
                 const warningReason = warning.reason;
-                const userId = strike.rebel_id;
+                const userId = warning.rebel_id;
 
                 await interaction.client.knex('warns')
                     .del()
@@ -261,8 +261,8 @@ module.exports = {
                     embeds: [
                         new EmbedBuilder()
                             .setColor(Colors.Aqua)
-                            .setTitle(`Found ${warnings.length} formal warning(s) for <@${user.id}>`)
-                            .setDescription(`${desc}`)
+                            .setTitle(`Warnings Found`)
+                            .setDescription(`Found ${warnings.length} formal warning(s) for <@${user.id}>\n\n${desc}`)
                             .setThumbnail(interaction.guild.iconURL())
                             .setTimestamp()
                             .setFooter({

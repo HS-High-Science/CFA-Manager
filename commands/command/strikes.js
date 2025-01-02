@@ -208,7 +208,7 @@ module.exports = {
                     embeds: [
                         new EmbedBuilder()
                             .setTitle('Strike removed!')
-                            .setDescription(`Successfully removed a strike from <@${user.id}>'s record.`)
+                            .setDescription(`Successfully removed a strike from <@${userId}>'s record.`)
                             .setColor(Colors.Green)
                             .setFields({ name: 'Removal Reason', value: reason })
                             .setThumbnail(interaction.guild.iconURL())
@@ -261,8 +261,8 @@ module.exports = {
                     embeds: [
                         new EmbedBuilder()
                             .setColor(Colors.Aqua)
-                            .setTitle(`Found ${strikes.length} strike(s) for <@${user.id}>`)
-                            .setDescription(`${desc}`)
+                            .setTitle(`Strikes Found`)
+                            .setDescription(`Found ${strikes.length} strike(s) for <@${user.id}>\n\n${desc}`)
                             .setThumbnail(interaction.guild.iconURL())
                             .setTimestamp()
                             .setFooter({
