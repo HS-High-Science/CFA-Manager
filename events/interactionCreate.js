@@ -18,7 +18,7 @@ module.exports = {
         } catch (error) {
             console.log(error);
 
-            await interaction.client.channels.cache.get('1235938304990380113').send({
+            await interaction.client.channels.cache.get('1258036097422852248').send({
                 embeds: [
                     new EmbedBuilder()
                         .setTitle('Bot encountered an error!')
