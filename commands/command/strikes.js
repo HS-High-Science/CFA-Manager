@@ -144,7 +144,7 @@ module.exports = {
                 });
             } else if (subcommand === 'remove') {
                 const id = interaction.options.getString('strike_id', true);
-                const reason = interaction.options.getString('reason');
+                const reason = interaction.options.getString('reason') ?? 'None.';
                 const strike = await interaction.client.knex('strikes')
                     .select('*')
                     .where('strike_id', id)
@@ -197,7 +197,7 @@ module.exports = {
                         iconURL: interaction.guild.iconURL()
                     });
 
-                if (reason) {
+                if (reason !== 'None.') {
                     logEmbed.addFields({ name: 'Strike Removal Reason', value: reason });
                     userEmbed.addFields({ name: 'Strike Removal Reason', value: reason });
                 };
