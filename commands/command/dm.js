@@ -30,6 +30,16 @@ module.exports = {
             const message = interaction.options.getString('message');
             const attachment = interaction.options.getAttachment('attachment');
             const anonymous = interaction.options.getBoolean('anonymous') ?? true;
+            const logEmbed = new EmbedBuilder()
+                .setColor(Colors.Green)
+                .setTitle('New Direct Message!')
+                .setDescription(`<@${interaction.user.id}> has sent a direct message to <@${user.id}>.\n\n${message}`)
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                });
+
             const embedToSend = new EmbedBuilder()
                 .setColor(0x2B2D31)
                 .setTitle(`You've Got Mail!`)
@@ -49,12 +59,20 @@ module.exports = {
                 embedToSend
                     .setDescription(`You have received a message from the Chaos Forces Alliance leadership${author}`)
                     .setImage(attachment.url);
+                logEmbed
+                    .setDescription(`<@${interaction.user.id}> has sent a direct message to <@${user.id}>.`)
+                    .setImage(attachment.url);
             } else if (!attachment && message) {
                 embedToSend
                     .setDescription(`You have received a message from the Chaos Forces Alliance leadership${author}\n\n${message}`);
+                logEmbed
+                    .setDescription(`<@${interaction.user.id}> has sent a direct message to <@${user.id}>.\n\n${message}`)
             } else if (attachment && message) {
                 embedToSend
                     .setDescription(`You have received a message from the Chaos Forces Alliance leadership${author}\n\n${message}`)
+                    .setImage(attachment.url);
+                logEmbed
+                    .setDescription(`<@${interaction.user.id}> has sent a direct message to <@${user.id}>.\n\n${message}`)
                     .setImage(attachment.url);
             } else if (!attachment && !message) {
                 return await interaction.editReply({
