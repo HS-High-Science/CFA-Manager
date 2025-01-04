@@ -154,18 +154,17 @@ module.exports = {
             switch (type) {
                 case 'et':
                     scheduleEmbed = new EmbedBuilder()
-                        .setTitle('Incoming Essential Training Announcement!')
+                        .setTitle(`An Essential Training has been scheduled on <t:${time}:F>. This is in your local time.`)
                         .setColor("#2B2D31")
-                        .setDescription(`## An essential training has been scheduled on <t:${time}:F>.
-Before joining at the designated time, please review all the training rules listed below. Once done, kindly react with ✅ to confirm your attendance. 
+                        .setDescription(`Before joining at the designated time, please review all the training rules listed below. Once done, kindly react with ✅ to confirm your attendance. 
 Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the training you reacted to.
-Breaking any of the rules below can lead to a warning/strike.
+Breaking any of these rules can lead to a warning/strike.
 ## Essential Training Rules
 * When you join, enter the <#1320466795882217552>. After that, STS at the spawn and await instructions from the host.
 * Do not go AFK or/and leave without notifying the host. Don't worry: disconnecting due to an internet/electricity problem will not get you punished if you notify the host about that issue.
 * Always listen to the orders issued by the host.
 * Use avatars that do not significantly alter your hitboxes.
-* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, ${interaction.member.nickname}.")`)
+* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, <@${interaction.user.id}>.")`)
                         .setFields(
                             { name: "Training Host", value: `<@${interaction.user.id}>`, inline: true },
                             { name: 'Training ID', value: `${uuid}`, inline: true }
@@ -174,24 +173,23 @@ Breaking any of the rules below can lead to a warning/strike.
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         })
                     break;
 
                 case 'ct':
                     scheduleEmbed = new EmbedBuilder()
-                        .setTitle('Incoming Combat Training Announcement!')
+                        .setTitle(`A Combat Training has been scheduled on <t:${time}:F>. This is in your local time.`)
                         .setColor("#2B2D31")
-                        .setDescription(`## A combat training has been scheduled on <t:${time}:F>.
-Before joining at the designated time, please review all the training rules listed below. Once done, kindly react with ✅ to confirm your attendance. 
+                        .setDescription(`Before joining at the designated time, please review all the training rules listed below. Once done, kindly react with ✅ to confirm your attendance. 
 Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the training you reacted to.
-Breaking any of the rules below can lead to a warning/strike.
+Breaking any of these rules can lead to a warning/strike.
 ## Combat Training Rules
 * When you join, enter the <#1320466795882217552>. After that, STS at the spawn and await instructions from the host.
 * Do not go AFK or/and leave without notifying the host. Don't worry: disconnecting due to an internet/electricity problem will not get you punished if you notify the host about that issue.
 * Always listen to the orders issued by the host.
 * Use avatars that do not significantly alter your hitboxes.
-* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, ${interaction.member.nickname}.")`)
+* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, <@${interaction.user.id}>.")`)
                         .setFields(
                             { name: "Training Host", value: `<@${interaction.user.id}>`, inline: true },
                             { name: 'Training ID', value: `${uuid}`, inline: true }
@@ -200,25 +198,24 @@ Breaking any of the rules below can lead to a warning/strike.
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         })
                     break;
 
                 case 'jt':
                     scheduleEmbed = new EmbedBuilder()
-                        .setTitle('Incoming Joint Training Announcement!')
+                        .setTitle(`A CFA x HSPS Joint Training has been scheduled on <t:${time}:F>. This is in your local time.`)
                         .setColor("#2B2D31")
-                        .setDescription(`## A CFA x HSPS Joint Training has been scheduled on <t:${time}:F>.
-Before joining at the designated time, please review all the training rules listed below. Once done, kindly react with ✅ to confirm your attendance. 
+                        .setDescription(`Before joining at the designated time, please review all the training rules listed below. Once done, kindly react with ✅ to confirm your attendance. 
 Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the training you reacted to.
-Breaking any of the rules below can lead to a warning/strike.
+Breaking any of these rules can lead to a warning/strike.
 ## Joint Training Rules
 * When you join, enter the <#1320466795882217552>. After that, STS at the spawn and await instructions from the host.
 * Do not go AFK or/and leave without notifying the host. Don't worry: disconnecting due to an internet/electricity problem will not get you punished if you notify the host about that issue.
 * Always listen to the orders issued by the host.
 * Do not harass security.
 * Use avatars that do not significantly alter your hitboxes.
-* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, ${interaction.member.nickname}.")`)
+* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, <@${interaction.user.id}>.")`)
                         .setFields(
                             { name: "Training Host", value: `<@${interaction.user.id}>`, inline: true },
                             { name: 'Training ID', value: `${uuid}`, inline: true }
@@ -227,14 +224,14 @@ Breaking any of the rules below can lead to a warning/strike.
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         });
                     break;
             };
 
             const message = await trainingChannel.send({
                 allowedMentions: { parse: ["roles"] },
-                content: "<@&1051414553591824428>",
+                content: "<@&1208467485104406619>",
                 embeds: [scheduleEmbed]
             });
 
@@ -243,7 +240,7 @@ Breaking any of the rules below can lead to a warning/strike.
             await client.knex('trainings')
                 .insert({
                     training_id: uuid,
-                    host_username: interaction.member.nickname,
+                    host_id: interaction.user.id,
                     message_id: message.id,
                     training_date: time,
                     training_type: type,
@@ -252,25 +249,21 @@ Breaking any of the rules below can lead to a warning/strike.
 
             if (type === 'jt') {
                 scheduleEmbed = new EmbedBuilder()
-                    .setTitle('Incoming Joint Training Announcement!')
+                    .setTitle(`An HSPS x CFA Joint Training has been scheduled on <t:${time}:F>. This is in your local time.`)
                     .setColor("#2B2D31")
-                    .setDescription(`## An HSPS x CFA Joint Training has been scheduled on <t:${time}:F>.
-Before joining at the designated time, please review all the training rules listed below. Once done, kindly react with ✅ to confirm your attendance. 
-Breaking any of the rules below can lead to a warning/strike.
+                    .setDescription(`Before joining at the designated time, please review all the training rules listed below. Once done, kindly react with ✅ to confirm your attendance. 
+Breaking any of these rules can land you in a punishment.
 ## Joint Training Rules
 * Do not go AFK or/and leave without notifying the host. Don't worry: disconnecting due to an internet/electricity problem will not get you punished if you notify the host about that issue.
 * Always listen to the orders issued by the host.
 * Use avatars that do not significantly alter your hitboxes.
 * Do not talk unless allowed to, however, you can ask for a permission to speak.`)
-                    .setFields(
-                        { name: "Training Host", value: `<@${interaction.user.id}>`, inline: true },
-                        { name: 'Training ID', value: `${uuid}`, inline: true }
-                    )
+                    .setFields({ name: "Training Host", value: `<@${interaction.user.id}>`, inline: true })
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
                     .setFooter({
                         text: interaction.guild.name,
-                        iconURL: interaction.user.avatarURL()
+                        iconURL: interaction.guild.iconURL()
                     });
 
                 const hspsMessage = await hspsChannel.send({
@@ -287,14 +280,14 @@ Breaking any of the rules below can lead to a warning/strike.
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Training Scheduled!')
+                        .setTitle('Success!')
                         .setDescription(`The training has been successfully scheduled!`)
-                        .addFields({ name: "Training ID", value: `\`\`\`ini\n[ ${uuid} ] \`\`\``, inline: true })
+                        .setFields({ name: 'Training ID', value: `\`\`\`ini\n[ ${uuid} ]\n\`\`\`` })
                         .setColor(Colors.Green)
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.id,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         })
                 ]
             });
@@ -323,17 +316,17 @@ Breaking any of the rules below can lead to a warning/strike.
                 .setTitle('Chaos Forces Alliance - Training Commencing')
                 .setDescription(`A scheduled training is now commencing. Please ensure that you;
 - STS at the spawn.
-- Await host's instructions.
+- Listen to host's instructions.
 - Have no avatar that massively alters your hitboxes.
 - Remain quiet unless you're requesting a permission to speak.
 - Show your best!
 
 ## Join the Training [here](${venueLink}).`)
-                .setFields({ name: 'Training ID', value: `${trainingID} ` })
+                .setFields({ name: 'Training ID', value: `${trainingID}` })
                 .setTimestamp()
                 .setFooter({
                     text: interaction.guild.name,
-                    iconURL: interaction.user.avatarURL()
+                    iconURL: interaction.guild.iconURL()
                 })
 
             await trainingMsg.reply({
@@ -348,7 +341,7 @@ Breaking any of the rules below can lead to a warning/strike.
 
                 await hspsTrainingMsg.reply({
                     allowedMentions: { parse: ["roles"] },
-                    content: '<@&1208467485104406619>',
+                    content: '<@&1258844608411205793>',
                     embeds: [startEmbed]
                 });
             };
@@ -356,14 +349,14 @@ Breaking any of the rules below can lead to a warning/strike.
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Training Started!')
+                        .setTitle('Success!')
                         .setDescription(`The training has been successfully started!`)
-                        .addFields({ name: "Training ID", value: `\`\`\`ini\n[ ${uuid} ] \`\`\``, inline: true })
+                        .setFields({ name: 'Training ID', value: `\`\`\`ini\n[ ${trainingID} ]\n\`\`\`` })
                         .setColor(Colors.Green)
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         })
                 ]
             });
@@ -387,8 +380,6 @@ Breaking any of the rules below can lead to a warning/strike.
             const trainingMsg = await trainingChannel.messages.fetch(`${msgID}`);
 
             await trainingMsg.reply({
-                allowedMentions: { parse: ["roles"] },
-                content: '<@&1208467485104406619>',
                 embeds: [
                     new EmbedBuilder()
                         .setColor(Colors.Red)
@@ -402,7 +393,7 @@ If you didn't make it in time, **attend another training.**`)
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         })
                 ]
             });
@@ -410,16 +401,14 @@ If you didn't make it in time, **attend another training.**`)
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Training Locked!')
+                        .setTitle('Success!')
                         .setDescription(`The training has been successfully locked!`)
-                        .addFields(
-                            { name: "Training ID", value: `\`\`\`ini\n[ ${uuid} ] \`\`\``, inline: true }
-                        )
+                        .setFields({ name: 'Training ID', value: `\`\`\`ini\n[ ${trainingID} ]\n\`\`\`` })
                         .setColor(Colors.Green)
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         })
                 ]
             });
@@ -444,7 +433,7 @@ If you didn't make it in time, **attend another training.**`)
             const cancelEmbed = new EmbedBuilder()
                 .setColor(Colors.Red)
                 .setTitle('Training Cancelled!')
-                .setDescription(`The above training has been canceled.
+                .setDescription(`The above training has been cancelled.
 We sincerely apologize for any inconvenience that this might have caused.`)
                 .addFields({ name: "Reason", value: interaction.options.getString("reason", true) })
                 .setThumbnail(interaction.guild.iconURL())
@@ -478,16 +467,13 @@ We sincerely apologize for any inconvenience that this might have caused.`)
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Training cancelled!')
+                        .setTitle('Success!')
                         .setDescription(`The training has been successfully cancelled!`)
-                        .addFields(
-                            { name: "Training ID", value: `\`\`\`ini\n[ ${uuid} ] \`\`\``, inline: true }
-                        )
                         .setColor(Colors.Green)
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         })
                 ]
             });
@@ -525,25 +511,19 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                     iconURL: interaction.guild.iconURL()
                 });
 
-            await msg.reply({
-                embeds: [concludeEmbed]
-            });
+            await msg.reply({ embeds: [concludeEmbed] });
 
             if (training.type === 'jt') {
                 const hspsMsgId = training.hsps_message_id;
                 const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
 
-                await hspsTrainingMsg.reply({
-                    allowedMentions: { parse: ["roles"] },
-                    content: '<@&1208467485104406619>',
-                    embeds: [concludeEmbed]
-                });
+                await hspsTrainingMsg.reply({ embeds: [concludeEmbed] });
             };
 
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Conclusion Success!')
+                        .setTitle('Success!')
                         .setDescription('Training successfully concluded!')
                         .setColor(Colors.Green)
                         .setTimestamp()
@@ -597,8 +577,9 @@ We sincerely apologize for any inconvenience that this might have caused.`)
             const updateEmbed = new EmbedBuilder()
                 .setColor(Colors.Blurple)
                 .setTitle('Training Time Updated')
-                .setDescription(`The above training's time has been changed. The training will now be on <t:${newTime}:f>.
+                .setDescription(`The above training's time has been changed. The training will now be on **<t:${newTime}:f>**.
 Please adjust your availability accordingly.`)
+                .setFields({ name: 'Training ID', value: `${trainingID}` })
                 .setThumbnail(interaction.guild.iconURL())
                 .setTimestamp()
                 .setFooter({
@@ -607,6 +588,8 @@ Please adjust your availability accordingly.`)
                 });
 
             await msg.reply({
+                allowedMentions: { parse: ["roles"] },
+                content: '<@&1208467485104406619>',
                 embeds: [updateEmbed]
             });
 
@@ -616,7 +599,7 @@ Please adjust your availability accordingly.`)
 
                 await hspsTrainingMsg.reply({
                     allowedMentions: { parse: ["roles"] },
-                    content: '<@&1208467485104406619>',
+                    content: '<@&1258844608411205793>',
                     embeds: [updateEmbed]
                 });
             };
@@ -624,9 +607,10 @@ Please adjust your availability accordingly.`)
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Update Success!')
+                        .setTitle('Success!')
                         .setDescription('Training successfully updated!')
                         .setColor(Colors.Green)
+                        .setFields({ name: 'Training ID', value: `\`\`\`ini\n[ ${trainingID} ]\n\`\`\`` })
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,

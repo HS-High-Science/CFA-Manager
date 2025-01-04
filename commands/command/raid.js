@@ -134,15 +134,14 @@ module.exports = {
                 content: "<@&1094305864317419632>",
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Chaos Forces Alliance Raid')
+                        .setTitle(`A raid has been scheduled on <t:${time}:F>. This is in your local time.`)
                         .setColor(Colors.DarkButNotBlack)
-                        .setDescription(`## A raid has been scheduled on <t:${time}:F>.
-Before joining at the designated time, please review all the raid rules listed below. Once done, kindly react with the :white_check_mark: emoji to confirm your attendance. **Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the raid you reacted to. Breaking any of these rules can lead to a warning/strike.**
+                        .setDescription(`Before joining at the designated time, please review all the raid rules listed below. Once done, kindly react with the :white_check_mark: emoji to confirm your attendance. **Do note that if you reacted, you can not unreact without notifying the host and having an objective reason for that. Adding to that, you must always join the raid you reacted to. Breaking any of these rules can lead to a warning/strike.**
 
 ## Raid Rules
 - Prior to joining, ensure that you have enough time available at least an hour before the raid begins. We request this to avoid last-minute cancellations within the final 10-30 minutes.
-- When you join, enter the Raid tribune (you are not obligated to talk, but you must still be there to at least listen to your teammates). After that, STS on the Chaos Forces spawn and await instructions from the host.
-- During the raid, do NOT go AFK or/and leave without notifying the host. Otherwise, you will be removed from the raid and will be punished when it ends. **Don't worry: disconnecting due to a WI-FI/Electricity problem will not get you punished if you rejoin when you can and notify the host about that issue.**
+- When you join, enter the <#1235182782011932713> (you are not obligated to talk, but you must still be there to at least listen to your teammates). After that, STS at the Chaos Forces spawn and await instructions from the host.
+- During the raid, do NOT go AFK and/or leave without notifying the host. Otherwise, you will be removed from the raid and will be punished when it ends. **Don't worry: disconnecting due to a WI-FI/Electricity problem will not get you punished if you rejoin when you can and if you notify the host about that issue.**
 - Always listen to the orders of higher ranks. You can talk freely during the raid, but **please do not talk while the host explains the plan.**
 - All CF rules apply to the raid, including the ban of any toxicity.`)
                         .setFields(
@@ -167,9 +166,9 @@ Before joining at the designated time, please review all the raid rules listed b
                     new EmbedBuilder()
                         .setTitle('Chaos Forces Alliance Raid')
                         .setColor(Colors.DarkButNotBlack)
-                        .setDescription(`The High Science Intelligence Agency has gotten information from our spies inside Chaos Forces Alliance that they are planning to raid the Classified Underground Facility on <t:${time}:F>!
+                        .setDescription(`The High Science Intelligence Agency has gotten information from our spies inside Chaos Forces Alliance that they are planning to raid the Classified Underground Facility on **<t:${time}:F>**!
 
-High Science is requesting all available security to react with ✅ to confirm that you are going to deploy on the CPUF when the raid commences and protect the facility at all cost.`)
+High Science is requesting all available security to react with ✅ to confirm that you are going to deploy on the CPUF when the raid commences and protect the facility at all costs.`)
                         .setFields({ name: "Raid Host", value: `<@${interaction.user.id}>` })
                         .setThumbnail(interaction.guild.iconURL())
                         .setTimestamp()
@@ -185,7 +184,7 @@ High Science is requesting all available security to react with ✅ to confirm t
             await client.knex('raids')
                 .insert({
                     raid_id: uuid,
-                    host_username: interaction.member.nickname,
+                    host_id: interaction.user.id,
                     cfa_message_id: message.id,
                     hsps_message_id: hspsMessage.id,
                     raid_date: time,
@@ -195,21 +194,15 @@ High Science is requesting all available security to react with ✅ to confirm t
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Raid Scheduled!')
-                        .setDescription(`The raid has been successfully scheduled!`)
-                        .addFields(
-                            {
-                                name: "Raid ID",
-                                value: `\`\`\`ini\n[ ${uuid} ] \`\`\``,
-                                inline: true
-                            }
-                        )
                         .setColor(Colors.Green)
-                        .setFooter({
-                            text: `Chaos Forces Alliance`,
-                            iconURL: interaction.user.avatarURL()
-                        })
+                        .setTitle('Success!')
+                        .setDescription(`The raid has been successfully scheduled!`)
+                        .addFields({ name: "Raid ID", value: `\`\`\`ini\n[ ${uuid} ]\n\`\`\`` })
                         .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        })
                 ]
             });
         } else if (subcommand === 'start') {
@@ -255,7 +248,7 @@ High Science is requesting all available security to react with ✅ to confirm t
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         })
                 ]
             });
@@ -271,11 +264,11 @@ High Science is requesting all available security to react with ✅ to confirm t
                         .setColor(Colors.DarkGreen)
                         .setThumbnail(interaction.guild.iconURL())
                         .setTitle(`🚨 CPUF IS UNDER ATTACK 🚨`)
-                        .setDescription(`Chaos Forces is commencing a raid on Classified Part Underground Facility! \nAll available security are to immediately deploy and fight off the raid.${desc}`)
+                        .setDescription(`Chaos Forces is commencing a raid on Classified Part Underground Facility! \nAll available security are to immediately deploy and fight off the attack.${desc}`)
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         })
                 ]
             });
@@ -283,20 +276,14 @@ High Science is requesting all available security to react with ✅ to confirm t
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Raid Started!')
+                        .setTitle('Success!')
                         .setDescription(`The raid has been successfully started!`)
-                        .addFields(
-                            {
-                                name: "Raid ID",
-                                value: `\`\`\`ini\n[ ${uuid} ] \`\`\``,
-                                inline: true
-                            }
-                        )
+                        .addFields({ name: "Raid ID", value: `\`\`\`ini\n[ ${raidID} ]\n\`\`\`` })
                         .setColor(Colors.Green)
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         })
                 ]
             });
@@ -367,13 +354,13 @@ We sincerely apologize for any inconvenience that this might have caused.`)
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Raid Cancelled!')
+                        .setTitle('Success!')
                         .setDescription(`The raid has been successfully cancelled!`)
                         .setColor(Colors.Green)
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
-                            iconURL: interaction.user.avatarURL()
+                            iconURL: interaction.guild.iconURL()
                         })
                 ]
             });
@@ -521,7 +508,7 @@ Thank you for participating in the raid.`)
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Conclusion Success!')
+                        .setTitle('Success!')
                         .setDescription('Raid successfully concluded!')
                         .setColor(Colors.Green)
                         .setTimestamp()
@@ -566,8 +553,8 @@ Thank you for participating in the raid.`)
                 .where({ raid_id: raidID });
 
             const timeChangeEmbed = new EmbedBuilder()
-                .setTitle('Raid Time Changed')
-                .setDescription(`## The raid time has been changed, the raid will now be on <t:${time}:F>.
+                .setTitle('Raid Time Updated')
+                .setDescription(`## The raid time has been updated, the raid will now be on **<t:${time}:F>**.
 Please adjust your availability accordingly.`)
                 .setThumbnail(interaction.guild.iconURL())
                 .setColor(Colors.DarkAqua)
@@ -592,16 +579,17 @@ Please adjust your availability accordingly.`)
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Time Change Success!')
-                        .setDescription('Raid time changed successfully!')
+                        .setTitle('Success!')
+                        .setDescription('Raid time updated successfully!')
                         .setColor(Colors.Green)
+                        .addFields({ name: "Raid ID", value: `\`\`\`ini\n[ ${raidID} ]\n\`\`\`` })
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
                             iconURL: interaction.guild.iconURL()
                         })
                 ]
-            })
-        }
+            });
+        };
     }
-}
+};

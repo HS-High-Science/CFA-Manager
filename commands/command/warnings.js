@@ -54,7 +54,7 @@ module.exports = {
             )
         ),
     async execute(interaction) {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply();
 
         const allowedIDs = ["1239137720669044766", "1255634139730935860", "1071373709157351464"] //llasat one is astro
         const subcommand = interaction.options.getSubcommand();
