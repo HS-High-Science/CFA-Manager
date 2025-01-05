@@ -231,7 +231,7 @@ Breaking any of these rules can lead to a warning/strike.
 
             const message = await trainingChannel.send({
                 allowedMentions: { parse: ["roles"] },
-                content: "<@&1208467485104406619>",
+                content: "<@&1051414553591824428>",
                 embeds: [scheduleEmbed]
             });
 
@@ -268,7 +268,7 @@ Breaking any of these rules can land you in a punishment.
 
                 const hspsMessage = await hspsChannel.send({
                     embeds: [scheduleEmbed],
-                    allowedMentions: { parse: 'roles' },
+                    allowedMentions: { parse: ['roles'] },
                     content: '<@&1258844608411205793>'
                 });
 
@@ -327,21 +327,27 @@ Breaking any of these rules can land you in a punishment.
                 .setFooter({
                     text: interaction.guild.name,
                     iconURL: interaction.guild.iconURL()
-                })
+                });
+            
+            if (training.training_type === 'jt') {
+                await trainingMsg.reply({
+                    allowedMentions: { parse: ["roles"] },
+                    content: '<@&1051414553591824428>',
+                    embeds: [startEmbed]
+                });
 
-            await trainingMsg.reply({
-                allowedMentions: { parse: ["roles"] },
-                content: '<@&1208467485104406619>',
-                embeds: [startEmbed]
-            });
-
-            if (training.type === 'jt') {
                 const hspsMsgId = training.hsps_message_id;
                 const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
 
                 await hspsTrainingMsg.reply({
                     allowedMentions: { parse: ["roles"] },
                     content: '<@&1258844608411205793>',
+                    embeds: [startEmbed]
+                });
+            } else {
+                await trainingMsg.reply({
+                    allowedMentions: { parse: ["roles"] },
+                    content: '<@&1208467485104406619>',
                     embeds: [startEmbed]
                 });
             };
@@ -378,25 +384,29 @@ Breaking any of these rules can land you in a punishment.
 
             const msgID = training.message_id;
             const trainingMsg = await trainingChannel.messages.fetch(`${msgID}`);
-
-            await trainingMsg.reply({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(Colors.Red)
-                        .setThumbnail(interaction.guild.iconURL())
-                        .setTitle('Chaos Forces Alliance - Training Locked')
-                        .setDescription(`A scheduled training has been locked and is now in progress!
+            const lockEmbed = new EmbedBuilder()
+                .setColor(Colors.Red)
+                .setThumbnail(interaction.guild.iconURL())
+                .setTitle('Chaos Forces Alliance - Training Locked')
+                .setDescription(`A scheduled training has been locked and is now in progress!
                                 
 If you disconnected, please contact the host or co-host to be let back in. 
 If you didn't make it in time, **attend another training.**`)
-                        .setFields({ name: 'Training ID', value: `${trainingID}` })
-                        .setTimestamp()
-                        .setFooter({
-                            text: interaction.guild.name,
-                            iconURL: interaction.guild.iconURL()
-                        })
-                ]
-            });
+                .setFields({ name: 'Training ID', value: `${trainingID}` })
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                })
+
+            await trainingMsg.reply({ embeds: [lockEmbed] });
+
+            if (training.training_type === 'jt') {
+                const hspsMsgId = training.hsps_message_id;
+                const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
+
+                await hspsTrainingMsg.reply({ embeds: [lockEmbed] });
+            };
 
             return await interaction.editReply({
                 embeds: [
@@ -443,17 +453,23 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                     iconURL: interaction.guild.iconURL()
                 });
 
-            await msg.reply({
-                allowedMentions: { parse: ["roles"] },
-                content: "<@&1208467485104406619>",
-                embeds: [cancelEmbed]
-            });
+            if (training.training_type === 'jt') {
+                await msg.reply({
+                    allowedMentions: { parse: ["roles"] },
+                    content: '<@&1051414553591824428>',
+                    embeds: [cancelEmbed]
+                });
 
-            if (training.type === 'jt') {
                 const hspsMsgId = training.hsps_message_id;
                 const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
 
                 await hspsTrainingMsg.reply({
+                    allowedMentions: { parse: ["roles"] },
+                    content: '<@&1258844608411205793>',
+                    embeds: [cancelEmbed]
+                });
+            } else {
+                await msg.reply({
                     allowedMentions: { parse: ["roles"] },
                     content: '<@&1208467485104406619>',
                     embeds: [cancelEmbed]
@@ -513,7 +529,7 @@ We sincerely apologize for any inconvenience that this might have caused.`)
 
             await msg.reply({ embeds: [concludeEmbed] });
 
-            if (training.type === 'jt') {
+            if (training.training_type === 'jt') {
                 const hspsMsgId = training.hsps_message_id;
                 const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
 
@@ -542,8 +558,6 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                 .first();
 
             const isConcluded = training.is_concluded;
-            const msgID = training.message_id;
-            const msg = await trainingChannel.messages.fetch(`${msgID}`);
 
             if (!training) {
                 return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No training with ID \`${trainingID}\` has been found in the database.`)] });
@@ -570,6 +584,9 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                 return await interaction.editReply({ embeds: [errorEmbed.setDescription('Cannot reschedule a training to the past.')] });
             };
 
+            const msgID = training.message_id;
+            const msg = await trainingChannel.messages.fetch(`${msgID}`);
+
             await client.knex("trainings")
                 .update({ training_date: newTime })
                 .where({ training_id: trainingID });
@@ -587,13 +604,25 @@ Please adjust your availability accordingly.`)
                     iconURL: interaction.guild.iconURL()
                 });
 
-            await msg.reply({
-                allowedMentions: { parse: ["roles"] },
-                content: '<@&1208467485104406619>',
-                embeds: [updateEmbed]
-            });
+            if (training.training_type === 'jt') {
+                await msg.reply({
+                    allowedMentions: { parse: ["roles"] },
+                    content: '<@&1051414553591824428>',
+                    embeds: [updateEmbed]
+                });
 
-            if (training.type === 'jt') {
+                await msg.edit({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor(msg.embeds[0].color)
+                            .setTitle(`A CFA x HSPS Joint Training has been scheduled on <t:${newTime}:F>. This is in your local time.`)
+                            .setDescription(msg.embeds[0].description)
+                            .setFields(msg.embeds[0].fields)
+                            .setThumbnail(interaction.guild.iconURL())
+                            .setFooter(msg.embeds[0].footer)
+                    ]
+                });
+
                 const hspsMsgId = training.hsps_message_id;
                 const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
 
@@ -601,6 +630,36 @@ Please adjust your availability accordingly.`)
                     allowedMentions: { parse: ["roles"] },
                     content: '<@&1258844608411205793>',
                     embeds: [updateEmbed]
+                });
+
+                await hspsTrainingMsg.edit({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor(hspsTrainingMsg.embeds[0].color)
+                            .setTitle(`An HSPS x CFA Joint Training has been scheduled on <t:${newTime}:F>. This is in your local time.`)
+                            .setDescription(hspsTrainingMsg.embeds[0].description)
+                            .setFields(hspsTrainingMsg.embeds[0].fields)
+                            .setThumbnail(interaction.guild.iconURL())
+                            .setFooter(hspsTrainingMsg.embeds[0].footer)
+                    ]
+                });
+            } else {
+                await msg.reply({
+                    allowedMentions: { parse: ["roles"] },
+                    content: '<@&1208467485104406619>',
+                    embeds: [updateEmbed]
+                });
+
+                await msg.edit({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor(msg.embeds[0].color)
+                            .setTitle(`A CFA x HSPS Joint Training has been scheduled on <t:${newTime}:F>. This is in your local time.`)
+                            .setDescription(msg.embeds[0].description)
+                            .setFields(msg.embeds[0].fields)
+                            .setThumbnail(interaction.guild.iconURL())
+                            .setFooter(msg.embeds[0].footer)
+                    ]
                 });
             };
 
