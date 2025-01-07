@@ -48,4 +48,9 @@ client.knex = knex({
     }
 });
 
+if (process.argv.includes('--ci')) {
+    console.log("Command and event parse successful. Skipping login due to this being a CI workflow.");
+    process.exit(0);
+}
+
 client.login(process.env.DISCORD_TOKEN);
