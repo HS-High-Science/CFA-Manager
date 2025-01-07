@@ -1,0 +1,73 @@
+name: Bug Report
+description: File a bug report
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please make sure that you include all necessary details in your post so we can reach a resolution as painlessly as possible. Also note that not recieving a response does not mean that your issue has been ignored.
+    validations:
+      required: false
+  - type: dropdown
+    id: version-channel
+    attributes:
+      label: Version channel
+      description: You're likely using stable, unless configured otherwise.
+      options:
+        - Production (Default)
+        - Nightly
+      default: 0
+    validations:
+      required: true
+  - type: input
+    id: bot-version
+    attributes:
+      label: Bot version
+      description: If your issue is related to loader/settings and you do not provide this we may not be able to solve your issue. Paste the value from `package.json -> version` ![Version VALUE](loader_version.png)
+      placeholder: Value of the version variable. "Latest" is invalid as unbeknownst you may not be using the latest loader for many reasons
+  - type: dropdown
+    id: segment
+    attributes:
+      label: What part of CFA Manager is this related to?
+      options:
+        - Backend
+        - Commands
+        - Events
+        - Documentation
+        - GitHub Repository
+        - Permissions
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What would've you expected to happen instead?
+      placeholder: ex. When I ran /ping the bot crashed. I expected the bot to respond with "Pong!" instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: What are the steps to reproduce this issue?
+      placeholder: ex. 1. Schedule an event 2. Wait for the event to start 3. Observe the bot crash
+    validations:
+      required: true
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      description: What type of Device is the bot being hosted on?
+      options:
+        - Windows
+        - MAC
+        - Linux
+        - Non-standard (explain in report)
+      default: 0
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output, if any. Please include the stack trace.
+      render: shell
