@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node .",
-    "dev": "node deploy-commands && node .",
+    "dev": "node src/deploy-commands && node .",
     "ci": "node . --ci"
   },
   "author": "Astropulent",
