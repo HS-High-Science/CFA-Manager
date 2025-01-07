@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node .",
     "dev": "node deploy-commands && node .",
-    "test": "npm ci && node deploy-commands && pm2 start index.js && pm2 stop index.js"
+    "ci": "node . --ci"
   },
   "author": "Astropulent",
   "license": "AGPLv3",
