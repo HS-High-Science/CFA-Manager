@@ -554,7 +554,7 @@ Thank you for participating in the raid.`)
 
             const timeChangeEmbed = new EmbedBuilder()
                 .setTitle('Raid Time Updated')
-                .setDescription(`## The raid time has been updated, the raid will now be on **<t:${time}:F>**.
+                .setDescription(`The above raid time has been updated, the raid will now be on **<t:${time}:F>**.
 Please adjust your availability accordingly.`)
                 .setThumbnail(interaction.guild.iconURL())
                 .setColor(Colors.DarkAqua)
@@ -570,10 +570,34 @@ Please adjust your availability accordingly.`)
                 embeds: [timeChangeEmbed]
             });
 
+            await msg.edit({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(msg.embeds[0].color)
+                        .setTitle(`A raid has been scheduled on <t:${time}:F>. This is in your local time.`)
+                        .setDescription(msg.embeds[0].description)
+                        .setThumbnail(interaction.guild.iconURL())
+                        .setFooter(msg.embeds[0].footer)
+                ]
+            });
+
             await hspsRaidMsg.reply({
                 allowedMentions: { parse: ["roles"] },
                 content: "<@&1258844664438718484>",
                 embeds: [timeChangeEmbed]
+            });
+
+            await hspsRaidMsg.edit({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(hspsRaidMsg.embeds[0].color)
+                        .setTitle(hspsRaidMsg.embeds[0].title)
+                        .setDescription(`The High Science Intelligence Agency has gotten information from our spies inside Chaos Forces Alliance that they are planning to raid the Classified Underground Facility on **<t:${time}:F>**!
+
+High Science is requesting all available security to react with ✅ to confirm that you are going to deploy on the CPUF when the raid commences and protect the facility at all costs.`)
+                        .setThumbnail(interaction.guild.iconURL())
+                        .setFooter(hspsRaidMsg.embeds[0].footer)
+                ]
             });
 
             return await interaction.editReply({
