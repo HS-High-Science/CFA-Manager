@@ -3,7 +3,7 @@ import { SlashCommandBuilder, EmbedBuilder, Colors } from 'discord.js';
 
 export const data = new SlashCommandBuilder()
     .setName('pull')
-    .setDescription('[DEV] Pull latest changes from Git Master and restart.');
+    .setDescription('[DEV] Pull latest changes from Git Master.');
 export async function execute(interaction) {
     const allowedIDs = ["1226408360551645254", "427832787605782549", "597084523338924063"];
     await interaction.deferReply();
