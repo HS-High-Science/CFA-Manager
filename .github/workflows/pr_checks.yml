@@ -1,0 +1,74 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ "master", "staging" ]
+
+jobs:
+  check-version:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get current branch package.json version
+        id: current_version
+        run: |
+          CURRENT_VERSION=$(cat package.json | grep '"version"' | awk -F: '{ print $2 }' | sed 's/[", ]//g')
+          echo "Current version: $CURRENT_VERSION"
+          echo "::set-output name=version::$CURRENT_VERSION"
+
+      - name: Get base branch package.json version
+        id: base_version
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          git checkout ${{ github.base_ref }}
+          BASE_VERSION=$(cat package.json | grep '"version"' | awk -F: '{ print $2 }' | sed 's/[", ]//g')
+          echo "Base version: $BASE_VERSION"
+          echo "::set-output name=version::$BASE_VERSION"
+
+      - name: Compare versions
+        run: |
+          if [ "${{ steps.current_version.outputs.version }}" == "${{ steps.base_version.outputs.version }}" ]; then
+            echo "The version in package.json has not been updated."
+            exit 1
+          else
+            echo "The version in package.json is updated."
+          fi
+
+  install_dependencies:
+    needs: check-version
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+
+  testrun:
+    needs: [ check-version, install_dependencies ]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run tests
+        run: pnpm run ci --if-present

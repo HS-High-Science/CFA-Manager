@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
 const os = require('os');
-const packageJSON = require("../../package.json");
+const packageJSON = require("../../../package.json");
 const moment = require('moment');
 require('moment-duration-format');
 const child_process = require('child_process');

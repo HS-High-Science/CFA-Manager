@@ -30,6 +30,7 @@ module.exports = {
             const message = interaction.options.getString('message');
             const attachment = interaction.options.getAttachment('attachment');
             const anonymous = interaction.options.getBoolean('anonymous') ?? true;
+            const dmLogChannel = await interaction.client.channels.cache.get(process.env.DM_LOG_CHANNEL_ID);
             const logEmbed = new EmbedBuilder()
                 .setColor(Colors.Green)
                 .setTitle('New Direct Message!')
@@ -111,6 +112,8 @@ module.exports = {
                     });
                 }
             };
+
+            await dmLogChannel.send({ embeds: [logEmbed] });
 
             return await interaction.followUp({
                 embeds: [

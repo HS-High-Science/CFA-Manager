@@ -37,6 +37,11 @@ for (const file of eventFiles) {
     }
 }
 
+if (process.argv.includes('--ci')) {
+    console.log("Command and event parse successful. Skipping login due to this being a CI workflow.");
+    process.exit(0);
+}
+
 client.knex = knex({
     client: process.env.DB_CLIENT,
     connection: {

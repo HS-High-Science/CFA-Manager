@@ -12,7 +12,7 @@ module.exports = {
         if (interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id)) {
             await interaction.followUp('`Re-Deploying...`')
 
-            const { stdout, stderr } = spawn('node deploy-commands', { shell: true })
+            const { stdout, stderr } = spawn('node src/deploy-commands', { shell: true })
 
             stderr.on('data', async (data) => {
                 console.log(`stderr: ${data}`);
