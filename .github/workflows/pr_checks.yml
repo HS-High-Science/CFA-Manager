@@ -2,7 +2,7 @@ name: PR Checks
 
 on:
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "staging" ]
 
 jobs:
   check-version:
@@ -55,7 +55,7 @@ jobs:
         run: pnpm install
 
   testrun:
-    needs: [ check-version, compile ]
+    needs: [ check-version, install_dependencies ]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
