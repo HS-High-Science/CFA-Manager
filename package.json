@@ -3,6 +3,7 @@
   "version": "1.4.0",
   "description": "Discord bot that manages the Chaos Forces Alliance.",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "start": "node .",
     "dev": "node src/deploy-commands && node .",
