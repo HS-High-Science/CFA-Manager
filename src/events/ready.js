@@ -1,13 +1,11 @@
-const { Events, ActivityType } = require('discord.js');
+import { Events, ActivityType } from 'discord.js';
 
-module.exports = {
-    name: Events.ClientReady,
-    once: true,
-    execute(client) {
-        console.log(`Ready! Logged in as ${client.user.tag}`);
-        client.user.setActivity({
-            name: 'with the Computer Core.',
-            type: ActivityType.Playing,
-        })
-    },
+export const name = Events.ClientReady;
+export const once = true;
+export async function execute(client) {
+    console.log(`Ready! Logged in as ${client.user.tag}`);
+    await client.user.setActivity({
+        name: 'with the Computer Core.',
+        type: ActivityType.Playing,
+    });
 };
