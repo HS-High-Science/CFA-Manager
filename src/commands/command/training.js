@@ -212,26 +212,8 @@ Breaking any of these rules can lead to a warning/strike.
                 break;
         };
 
-        const message = await trainingChannel.send({
-            allowedMentions: { parse: ["roles"] },
-            content: "<@&1051414553591824428>",
-            embeds: [scheduleEmbed]
-        });
-
-        await message.react('✅');
-
-        await client.knex('trainings')
-            .insert({
-                training_id: uuid,
-                host_id: interaction.user.id,
-                message_id: message.id,
-                training_date: time,
-                training_type: type,
-                is_concluded: false
-            });
-
         if (type === 'jt') {
-            scheduleEmbed = new EmbedBuilder()
+            const hspsScheduleEmbed = new EmbedBuilder()
                 .setTitle(`An HSPS x CFA Joint Training has been scheduled on <t:${time}:F>. This is in your local time.`)
                 .setColor("#2B2D31")
                 .setDescription(`Before joining at the designated time, please review all the training rules listed below. Once done, kindly react with ✅ to confirm your attendance. 
@@ -249,16 +231,49 @@ Breaking any of these rules can land you in a punishment.
                     iconURL: interaction.guild.iconURL()
                 });
 
+            const message = await trainingChannel.send({
+                allowedMentions: { parse: ["roles"] },
+                content: "<@&1051414553591824428>",
+                embeds: [scheduleEmbed]
+            });
+
+            await message.react('✅');
+
             const hspsMessage = await hspsChannel.send({
-                embeds: [scheduleEmbed],
+                embeds: [hspsScheduleEmbed],
                 allowedMentions: { parse: ['roles'] },
                 content: '<@&1258844608411205793>'
             });
 
             await client.knex('trainings')
-                .update({ hsps_message_id: hspsMessage.id })
-                .where({ training_id: uuid });
-        }
+                .insert({
+                    training_id: uuid,
+                    host_id: interaction.user.id,
+                    message_id: message.id,
+                    hsps_message_id: hspsMessage.id,
+                    training_date: time,
+                    training_type: type,
+                    is_concluded: false
+                });
+        } else {
+            const message = await trainingChannel.send({
+                allowedMentions: { parse: ["roles"] },
+                content: "<@&1208467485104406619>",
+                embeds: [scheduleEmbed]
+            });
+
+            await message.react('✅');
+
+            await client.knex('trainings')
+                .insert({
+                    training_id: uuid,
+                    host_id: interaction.user.id,
+                    message_id: message.id,
+                    training_date: time,
+                    training_type: type,
+                    is_concluded: false
+                });
+        };
 
         return await interaction.editReply({
             embeds: [
