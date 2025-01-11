@@ -12,10 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "@withgraphite/graphite-cli": "^1.4.11",
-    "discord.js": "^14.15.1",
-    "dotenv": "^16.4.5",
+    "discord.js": "^14.17.3",
+    "dotenv": "^16.4.7",
     "knex": "^3.1.0",
-    "mysql2": "^3.9.3",
-    "pm2": "^5.3.1"
+    "mysql2": "^3.12.0",
+    "pm2": "^5.4.3"
   }
 }
