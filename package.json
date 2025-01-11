@@ -1,23 +1,20 @@
 {
-  "name": "cfa-manager",
-  "version": "1.5.0",
-  "description": "Discord bot that manages the Chaos Forces Alliance.",
-  "main": "src/index.js",
-  "type": "module",
+  "name": "cfu-manager",
+  "version": "1.0.0",
+  "description": "Discord bot that manages the Chaos Forces Alliance",
+  "main": "index.js",
   "scripts": {
-    "start": "node .",
-    "dev": "node src/deploy-commands && node .",
-    "ci": "node . --ci"
+    "start": "node deploy-commands && node .",
+    "test": "npm ci && node deploy-commands && pm2 start index.js && pm2 stop index.js"
   },
-  "author": "Astropulent",
-  "license": "AGPLv3",
+  "author": "AstroHWeston",
+  "license": "ISC",
   "dependencies": {
-    "discord.js": "^14.17.2",
-    "dotenv": "^16.4.7",
+    "@withgraphite/graphite-cli": "^1.4.11",
+    "discord.js": "^14.15.1",
+    "dotenv": "^16.4.5",
     "knex": "^3.1.0",
-    "moment": "^2.30.1",
-    "moment-duration-format": "^2.3.2",
-    "mysql2": "^3.12.0",
-    "pm2": "^5.4.3"
+    "mysql2": "^3.9.3",
+    "pm2": "^5.3.1"
   }
 }
