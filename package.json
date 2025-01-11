@@ -1,8 +1,9 @@
 {
-  "name": "cfu-manager",
-  "version": "1.0.0",
-  "description": "Discord bot that manages the Chaos Forces Alliance",
-  "main": "index.js",
+  "name": "cfa-manager",
+  "version": "1.5.0",
+  "description": "Discord bot that manages the Chaos Forces Alliance.",
+  "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "start": "node deploy-commands && node .",
     "test": "npm ci && node deploy-commands && pm2 start index.js && pm2 stop index.js"
