@@ -6,10 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "node deploy-commands && node .",
-    "test": "npm ci && node deploy-commands && pm2 start index.js && pm2 stop index.js"
+    "test": "npm ci && node deploy-commands && pm2 start index.js && pm2 stop index.js",
+    "ci": "node . --ci"
   },
-  "author": "AstroHWeston",
-  "license": "ISC",
+  "author": "Astropulent",
+  "license": "AGPLv3",
   "dependencies": {
     "discord.js": "^14.15.1",
     "dotenv": "^16.4.5",
