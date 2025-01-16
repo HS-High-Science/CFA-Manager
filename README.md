@@ -36,3 +36,7 @@ Please read through our [contribution guidelines](./CODE_OF_CONDUCT.md) before s
 
 # Help
 If you don't understand something in the documentation, you are experiencing problems, or you just need a gentle nudge in the right direction, please join our [Discord server](https://discord.gg/C9cPJGz37N)!
+
+# Credits
+We would personally like to thank the developers for all the amazing packages that you guys think of and create! Without people like yourself, the dev world would not be where it is today.
+Additionally, we would like to give a special mention to the Guardsman Network team, for their continued support throughout the development of any project we have worked on. They are truly amazing, and you should definitely check them out @ https://gdsmn.dev!
