@@ -42,7 +42,7 @@ export async function execute(interaction) {
 
         const embedToSend = new EmbedBuilder()
             .setColor(0x2B2D31)
-            .setTitle(`You've Got Mail!`)
+            .setTitle(`You've got mail!`)
             .setThumbnail(interaction.guild.iconURL())
             .setTimestamp()
             .setFooter({
@@ -53,7 +53,7 @@ export async function execute(interaction) {
         let author = `.`;
         if (!anonymous) {
             author = ` (<@${interaction.user.id}>).`;
-        };
+        }
 
         if (attachment && !message) {
             embedToSend
@@ -88,7 +88,7 @@ export async function execute(interaction) {
                         })
                 ]
             });
-        };
+        }
 
         try {
             await user.send({
@@ -110,7 +110,7 @@ export async function execute(interaction) {
                     ]
                 });
             }
-        };
+        }
 
         await dmLogChannel.send({ embeds: [logEmbed] });
 
@@ -131,7 +131,7 @@ export async function execute(interaction) {
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Permission Denied!')
+                    .setTitle('Access denied!')
                     .setDescription('You do not have the required permissions to use this command!')
                     .setColor(Colors.Red)
                     .setTimestamp()
@@ -141,5 +141,5 @@ export async function execute(interaction) {
                     })
             ]
         });
-    };
-};
+    }
+}
