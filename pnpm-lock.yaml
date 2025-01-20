@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@astrohweston/astros-first-package':
-        specifier: ^1.0.0
-        version: 1.0.0
       discord.js:
         specifier: ^14.17.3
         version: 14.17.3
@@ -37,9 +34,6 @@ importers:
         version: 0.1.5
 
 packages:
-
-  '@astrohweston/astros-first-package@1.0.0':
-    resolution: {integrity: sha512-BS+CRKQG3XZIQmx+R5GNxML245hANN6fFp1RCO0pj2YV1ytP55wQpqe9nZ2fYKNEoDVmwELS8cTvgjYGZR23fQ==, tarball: https://npm.pkg.github.com/download/@astrohweston/astros-first-package/1.0.0/4dbd8d4f7f0761bfcd7bc1b99b2faffd319ae818}
 
   '@discordjs/builders@1.10.0':
     resolution: {integrity: sha512-ikVZsZP+3shmVJ5S1oM+7SveUCK3L9fTyfA8aJ7uD9cNQlTqF+3Irbk2Y22KXTb3C3RNUahRkSInClJMkHrINg==}
@@ -1131,8 +1125,6 @@ packages:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
 
 snapshots:
-
-  '@astrohweston/astros-first-package@1.0.0': {}
 
   '@discordjs/builders@1.10.0':
     dependencies:
