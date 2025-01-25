@@ -1,6 +1,6 @@
 {
   "name": "cfa-manager",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "description": "Discord bot that manages the Chaos Forces Alliance.",
   "main": "src/index.js",
   "type": "module",
@@ -9,7 +9,7 @@
     "test": "npm ci && node deploy-commands && pm2 start index.js && pm2 stop index.js",
     "ci": "node . --ci"
   },
-  "author": "Astropulent",
+  "author": "Asynchronite",
   "license": "AGPLv3",
   "dependencies": {
     "discord.js": "^14.17.3",
