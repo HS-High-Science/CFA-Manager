@@ -84,20 +84,19 @@ export const data = new SlashCommandBuilder()
             .setDescription('The ID of the raid you want to log.')
             .setRequired(true)
         )
-        .addUserOption(option => option
-            .setName('participant')
-            .setDescription('The raid participant you want to add to a log.')
-            .setRequired(true)
-        )
         .addStringOption(option => option
             .setName('log')
-            .setDescription('The log itself.')
+            .setDescription('The log itself. You can add multiple logs by separating them with a semicolon ;')
             .setRequired(true)
+        )
+        .addUserOption(option => option
+            .setName('participant')
+            .setDescription('Raid participant. Ignore to submit a raid summary.')
         )
     )
     .addSubcommand(subCommand => subCommand
         .setName('log_remove')
-        .setDescription('Delete a raid log for a person.')
+        .setDescription('Delete a person\'s raid log.')
         .addStringOption(option => option
             .setName('log_id')
             .setDescription('The ID of the log you want to delete.')
@@ -106,15 +105,10 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subCommand => subCommand
         .setName('log_edit')
-        .setDescription('Edit a raid log for a person.')
+        .setDescription('Edit a person\'s raid log. WARNING: this overwrites the log entirely.')
         .addStringOption(option => option
             .setName('log_id')
-            .setDescription('The ID of the raid you want to log.')
-            .setRequired(true)
-        )
-        .addUserOption(option => option
-            .setName('participant')
-            .setDescription('The raid participant whose log you want to edit.')
+            .setDescription('The ID of the log you want to edit. WARNING: this overwrites the log entirely.')
             .setRequired(true)
         )
         .addStringOption(option => option
@@ -132,18 +126,18 @@ export const data = new SlashCommandBuilder()
         )
         .addStringOption(option => option
             .setName('raid_id')
-            .setDescription('View the logs for a certain raid.')
+            .setDescription('View the logs for a certain raid. You can combine this option with participant option.')
         )
         .addUserOption(option => option
             .setName('participant')
-            .setDescription('View the person\'s raid logs.')
+            .setDescription('View the person\'s raid logs. You can combine this option with raid_id option.')
         )
     );
 export async function execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
 
     const client = await interaction.client;
-    const allowedIDs = ["1157806062070681600", "846692755496763413", "1066470548399468644", "1248632771900084286"]; // raid hosting perms, something else, lead insurgent, strike team
+    const allowedIDs = ["1268226274401193984", "1157806062070681600", "846692755496763413", "1066470548399468644", "1248632771900084286"]; // raid hosting perms, something else, lead insurgent, strike team
 
     if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
         return await interaction.editReply({
@@ -638,7 +632,9 @@ Please adjust your availability accordingly.`)
                     .setColor(msg.embeds[0].color)
                     .setTitle(`A raid has been scheduled on <t:${time}:F>. This is in your local time.`)
                     .setDescription(msg.embeds[0].description)
+                    .setFields(msg.embeds[0].fields)
                     .setThumbnail(interaction.guild.iconURL())
+                    .setTimestamp(new Date(msg.embeds[0].timestamp))
                     .setFooter(msg.embeds[0].footer)
             ]
         });
@@ -658,6 +654,7 @@ Please adjust your availability accordingly.`)
 
 High Science is requesting all available security to react with ✅ to confirm that you are going to deploy on the CPUF when the raid commences and protect the facility at all costs.`)
                     .setThumbnail(interaction.guild.iconURL())
+                    .setTimestamp(new Date(hspsRaidMsg.embeds[0].timestamp))
                     .setFooter(hspsRaidMsg.embeds[0].footer)
             ]
         });
@@ -677,50 +674,59 @@ High Science is requesting all available security to react with ✅ to confirm t
             ]
         });
     } else if (subcommand === 'log_add') {
+        // log commands are complicated, so i will leave comments
         const raidId = interaction.options.getString('raid_id', true);
-        const existingRaid = await client.knex('raids')
+        const existingRaid = await client.knex('raids') // check if the supplied raid id exists in the database
             .select('*')
             .where('raid_id', raidId)
             .first();
 
         if (!existingRaid) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid with ID \`${raidId}\` has been found in the database.`)] });
 
-        const user = interaction.options.getUser('participant', true);
+        const user = interaction.options.getUser('participant')?.id ?? 'summary';
         const content = interaction.options.getString('log', true);
-        const existingLog = await client.knex('raidlog') // check for already existing log for that user on that raid
+        let uuid;
+
+        // check for already existing raid log or summary
+        const existingLog = await client.knex('raidlogs')
             .select('*')
             .where('raid_id', raidId)
-            .andWhere('operative_id', user.id)
+            .andWhere('operative_id', user)
             .first();
 
-        if (existingLog) return await interaction.editReply({
-                embeds: [
-                    errorEmbed
-                        .setDescription('A log for this person on this raid already exists.\nPlease use "/raid log_edit" command if you wish to edit this log.')
-                        .addFields({ name: 'Log ID', value: existingLog.id })
-                ]
-            });
+        if (!existingLog) { // if no log exists, create one
+            uuid = crypto.randomUUID();
 
-        const uuid = crypto.randomUUID();
+            await client.knex('raidlogs')
+                .insert({
+                    log_id: uuid,
+                    raid_id: raidId,
+                    operative_id: user,
+                    contents: content,
+                    writer_id: interaction.user.id,
+                    log_date: now
+                });
+        } else { // otherwise, edit it
+            await client.knex('raidlogs')
+                .update({
+                    contents: existingLog.contents.concat(`;${content}`),
+                    writer_id: interaction.user.id,
+                    log_date: now
+                })
+                .where('log_id', existingLog.log_id);
+        }
 
-        await client.knex('raidlogs')
-            .insert({
-                log_id: uuid,
-                raid_id: raidId,
-                operative_id: user.id,
-                log_contents: content,
-                log_writer: interaction.user.id,
-                log_date: now
-            });
+        // if user option is omitted, subject will be summary, otherwise it will be a user mentionable
+        const subject = user === 'summary' ? 'summary' : `<@${user}>`;
 
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
                     .setColor(Colors.Green)
                     .setTitle('Success.')
-                    .setDescription(`Successfully added a log for ${user}.`)
+                    .setDescription(`Successfully added a raid log (${subject}).`)
                     .setFields(
-                        { name: 'Log ID', value: uuid, inline: true },
+                        { name: 'Log ID', value: existingLog?.log_id ?? uuid, inline: true },
                         { name: 'Raid ID', value: raidId, inline: true }
                     )
                     .setTimestamp()
@@ -732,14 +738,14 @@ High Science is requesting all available security to react with ✅ to confirm t
         });
     } else if (subcommand === 'log_remove') {
         const logId = interaction.options.getString('log_id', true);
-        const existingLog = await client.knex('raidlogs')
+        const existingLog = await client.knex('raidlogs') // make sure the supplied log id exists in the database
             .select('*')
             .where('log_id', logId)
             .first();
 
-        if (!existingLog) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid log with ID \`${logId} has been found in the database.`)] });
+        if (!existingLog) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid log with ID \`${logId}\` has been found in the database.`)] });
 
-        await client.knex('raidlogs')
+        await client.knex('raidlogs') // delete a log
             .del()
             .where('log_id', logId);
 
@@ -758,21 +764,19 @@ High Science is requesting all available security to react with ✅ to confirm t
         });
     } else if (subcommand === 'log_edit') {
         const logId = interaction.options.getString('log_id', true);
-        const user = interaction.options.getUser('participant', true);
-        const existingLog = await client.knex('raidlogs')
+        const existingLog = await client.knex('raidlogs') // make sure the supplied log id exists in the database
             .select('*')
             .where('log_id', logId)
-            .andWhere('operative_id', user.id)
             .first();
 
-        if (!existingLog) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid log with ID \`${logId} for ${user} has been found in the database.`)] });
+        if (!existingLog) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid log with ID \`${logId}\` has been found in the database.`)] });
 
         const content = interaction.options.getString('updated_log', true);
 
-        await client.knex('raidlogs')
+        await client.knex('raidlogs') // update the existing log with new content
             .update({
-                log_contents: content,
-                log_writer: interaction.user.id,
+                contents: content,
+                writer_id: interaction.user.id,
                 log_date: now
             })
             .where('log_id', logId);
@@ -782,7 +786,7 @@ High Science is requesting all available security to react with ✅ to confirm t
                 new EmbedBuilder()
                     .setColor(Colors.Green)
                     .setTitle('Success.')
-                    .setDescription(`Successfully updated a raid log for ${user}.`)
+                    .setDescription(`Successfully updated a raid log.`)
                     .setFields(
                         { name: 'Log ID', value: existingLog.log_id, inline: true },
                         { name: 'Raid ID', value: existingLog.raid_id, inline: true }
@@ -797,28 +801,162 @@ High Science is requesting all available security to react with ✅ to confirm t
     } else if (subcommand === 'log_view') {
         const logId = interaction.options.getString('log_id');
         const raidId = interaction.options.getString('raid_id');
-        const user = interaction.options.getUser('participant');
+        const user = interaction.options.getUser('participant')?.id ?? 'summary';
 
-        if (!(logId || raidId || user)) return await interaction.editReply({ embeds: [errorEmbed.setDescription('No options have been specified for log search.\nPlease specify at least one option.')] });
+        // if no options have been supplied, throw an error
+        if (!(logId || raidId)) return await interaction.editReply({ embeds: [errorEmbed.setDescription('No raid ID or log ID have been provided.\nPlease specify either of these options.')] });
 
-        let log;
-        if (logId) {
-            log = await client.knex('raidlogs')
+        if (logId) { // if log id option has been supplied, output the respective log if it exists
+            const log = await client.knex('raidlogs')
                 .select('*')
                 .where('log_id', logId)
                 .first();
+
+            if (!log) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid log with ID \`${logId}\` has been found in the database.`)] });
+
+            const contents = log.contents.split(';'); // split a database log string into multiple smaller ones
+
+            let logs = ``;
+            for (const fragment of contents) { // assemble all pieces of log into a single string
+                logs = logs.concat(`\n${fragment}`);
+            }
+
+            // define who/what the log is about
+            const subject = log.operative_id === 'summary' ? 'SUMMARY' : `<@${log.operative_id}>`;
 
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
                         .setColor(Colors.Aqua)
-                        .setTitle('Raid log found')
-                        .setDescription(`Found a raid log with ID \`${logId}.
-This log is for <@${log.operative_id}>.
-\`\`\`diff
-${log.log_contents}
+                        .setTitle('Raid log found.')
+                        .setDescription(`Found a raid log with ID \`${logId}\`:
+
+${subject} (By <@${log.writer_id}> @ <t:${log.log_date}:f>)
+\`\`\`diff${logs}
 \`\`\`
-Written by ${log.log_writer} on <t:${log.log_date}:f>.`)
+`)
+                        .setFields({ name: 'Raid ID', value: log.raid_id })
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        })
+                ]
+            });
+        } else if (raidId && user === 'summary') { // if only the raid id option has been supplied, display all logs for that raid, if it exists
+            const logs = await client.knex('raidlogs')
+                .select('*')
+                .where('raid_id', raidId)
+                .orderBy('operative_id', 'asc');
+
+            if (logs.length === 0) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid logs have been found for raid with ID \`${raidId}\`.`)] });
+
+            let desc = ``;
+            for (const log of logs) { // make a string that contains all logs and info about them
+                const contents = log.contents.split(';'); // split a database log string into smaller ones
+
+                let logstring = ``; // i am running out of names here
+                for (const fragment of contents) { // assemble a string list with all those smaller logs
+                    logstring = logstring.concat(`\n${fragment}`);
+                }
+
+                // define who/what the log is about
+                const subject = log.operative_id === 'summary' ? 'SUMMARY' : `<@${log.operative_id}>`;
+
+                desc = desc.concat(`${subject} (By <@${log.writer_id}> @ <t:${log.log_date}:f>)
+\`\`\`diff${logstring}
+(${log.log_id})
+\`\`\`
+`)
+            }
+
+            return await interaction.editReply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Aqua)
+                        .setTitle('Raid logs found.')
+                        .setDescription(`Found raid logs for raid \`${raidId}\`:\n\n${desc}`)
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        })
+                ]
+            })
+        } else if (raidId && user !== 'summary') { // if raid id and user options have been supplied, select the logs that would satisfy both queries
+            const logs = await client.knex('raidlogs')
+                .select('*')
+                .where('raid_id', raidId);
+
+            if (logs.length === 0) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid logs have been found for raid with ID \`${raidId}\`.`)] });
+
+            const personalLogs = [];
+
+            for (const log of logs) { // if a log is about the supplied operative, append it to the personalLogs array
+                if (log.operative_id === user) {
+                    personalLogs.push(log);
+                }
+            }
+
+            let desc = ``;
+            for (const log of personalLogs) { // form a string list of collected logs
+                const contents = log.contents.split(';'); // split a database log string into smaller ones
+
+                let logstring = ``;
+                for (const fragment of contents) { // assemble a string list with all those smaller logs
+                    logstring = logstring.concat(`\n${fragment}`);
+                }
+
+                desc = desc.concat(`
+\`\`\`diff${logstring}
+(${log.log_id})
+\`\`\`
+By <@${log.writer_id}> @ <t:${log.log_date}:f>
+`)
+            }
+
+            return await interaction.editReply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Aqua)
+                        .setTitle('Raid logs found.')
+                        .setDescription(`Found raid logs for <@${user}> on raid \`${raidId}\`:\n${desc}`)
+                        .setTimestamp()
+                        .setFooter({
+                            text: interaction.guild.name,
+                            iconURL: interaction.guild.iconURL()
+                        })
+                ]
+            })
+        } else if (user !== 'summary' && !raidId) { // if only the user option has been supplied, select raid logs about that user
+            const logs = await client.knex('raidlogs')
+                .select('*')
+                .where('operative_id', user);
+
+            if (logs.length === 0) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid logs have been found for ${user}.`)] });
+
+            let desc = ``;
+            for (const log of logs) { // form a string list of all collected logs
+                const contents = log.contents.split(';'); // split a database log string into smaller ones
+
+                let logstring = ``;
+                for (const fragment of contents) { // assemble a string list with all those smaller logs
+                    logstring = logstring.concat(`\n${fragment}`);
+                }
+
+                desc = desc.concat(`\`\`\`diff${logstring}
+(${log.log_id})
+\`\`\`
+By <@${log.writer_id}> @ <t:${log.log_date}:f>
+`)
+            }
+
+            return await interaction.editReply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Aqua)
+                        .setTitle('Raid logs found.')
+                        .setDescription(`Found raid logs for <@${user}>:\n${desc}`)
                         .setTimestamp()
                         .setFooter({
                             text: interaction.guild.name,
@@ -827,7 +965,5 @@ Written by ${log.log_writer} on <t:${log.log_date}:f>.`)
                 ]
             })
         }
-
-        // TODO: search logic for raidId and user options
     }
 }
