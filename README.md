@@ -7,7 +7,7 @@ CFA Manager is a Discord utility bot created by [Astro](https://github.com/Astro
 ## Installation
 To get started with CFA Manager, please follow these simple steps:
 
-- Clone the [CFA Manager repository](https://github.com/AstroHWeston/CFA-Manager.git) (Example: `git clone https://github.com/AstroHWeston/CFA-Manager.git`).
+- Clone the [CFA Manager repository](https://github.com/HS-High-Science/CFA-Manager.git) (Example: `git clone https://github.com/HS-High-Science/CFA-Manager.git`).
 - Install relevant NPM dependencies using a package manager of your choice (Example: `npm install`, `pnpm install`, `yarn install`).
 - Copy the `.env.example` file to `.env` (Example: `cp .env.example .env`).
 
