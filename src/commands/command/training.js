@@ -245,6 +245,8 @@ Breaking any of these rules can land you in a punishment.
                 content: '<@&1258844608411205793>'
             });
 
+            await hspsMessage.react('✅');
+
             await client.knex('trainings')
                 .insert({
                     training_id: uuid,
