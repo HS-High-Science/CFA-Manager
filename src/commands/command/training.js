@@ -233,7 +233,7 @@ Breaking any of these rules can land you in a punishment.
 
             const message = await trainingChannel.send({
                 allowedMentions: { parse: ["roles"] },
-                content: "<@&1051414553591824428>",
+                content: "<@&1208467485104406619>",
                 embeds: [scheduleEmbed]
             });
 
@@ -242,7 +242,7 @@ Breaking any of these rules can land you in a punishment.
             const hspsMessage = await hspsChannel.send({
                 embeds: [hspsScheduleEmbed],
                 allowedMentions: { parse: ['roles'] },
-                content: '<@&1258844608411205793>'
+                content: '<@&1329145116644085790>'
             });
 
             await hspsMessage.react('✅');
@@ -286,7 +286,7 @@ Breaking any of these rules can land you in a punishment.
                     .setColor(Colors.Green)
                     .setTimestamp()
                     .setFooter({
-                        text: interaction.guild.id,
+                        text: interaction.guild.name,
                         iconURL: interaction.guild.iconURL()
                     })
             ]
@@ -332,7 +332,7 @@ Breaking any of these rules can land you in a punishment.
         if (training.training_type === 'jt') {
             await trainingMsg.reply({
                 allowedMentions: { parse: ["roles"] },
-                content: '<@&1051414553591824428>',
+                content: '<@&1208467485104406619>',
                 embeds: [startEmbed]
             });
 
@@ -341,7 +341,7 @@ Breaking any of these rules can land you in a punishment.
 
             await hspsTrainingMsg.reply({
                 allowedMentions: { parse: ["roles"] },
-                content: '<@&1258844608411205793>',
+                content: '<@&1329145116644085790>',
                 embeds: [startEmbed]
             });
         } else {
@@ -456,7 +456,7 @@ We sincerely apologize for any inconvenience that this might have caused.`)
         if (training.training_type === 'jt') {
             await msg.reply({
                 allowedMentions: { parse: ["roles"] },
-                content: '<@&1051414553591824428>',
+                content: '<@&1208467485104406619>',
                 embeds: [cancelEmbed]
             });
 
@@ -465,7 +465,7 @@ We sincerely apologize for any inconvenience that this might have caused.`)
 
             await hspsTrainingMsg.reply({
                 allowedMentions: { parse: ["roles"] },
-                content: '<@&1258844608411205793>',
+                content: '<@&1329145116644085790>',
                 embeds: [cancelEmbed]
             });
         } else {
@@ -607,7 +607,7 @@ Please adjust your availability accordingly.`)
         if (training.training_type === 'jt') {
             await msg.reply({
                 allowedMentions: { parse: ["roles"] },
-                content: '<@&1051414553591824428>',
+                content: '<@&1208467485104406619>',
                 embeds: [updateEmbed]
             });
 
@@ -628,7 +628,7 @@ Please adjust your availability accordingly.`)
 
             await hspsTrainingMsg.reply({
                 allowedMentions: { parse: ["roles"] },
-                content: '<@&1258844608411205793>',
+                content: '<@&1329145116644085790>',
                 embeds: [updateEmbed]
             });
 
