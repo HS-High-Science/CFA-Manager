@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node deploy-commands && node .",
+    "start": "node src/deploy-commands && node .",
     "test": "npm ci && node deploy-commands && pm2 start index.js && pm2 stop index.js",
     "ci": "node . --ci"
   },

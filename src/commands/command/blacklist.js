@@ -35,46 +35,43 @@ export const data = new SlashCommandBuilder()
             .setDescription(`The reason for the blacklist removal.`)
         )
     );
+
 export async function execute(interaction) {
     await interaction.deferReply();
 
     const allowedIDs = ["1239137720669044766", "1255634139730935860"]; // command, high command
 
-    if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
-        return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setTitle('Access denied!')
-                    .setDescription('You do not have the required permissions to use this command!')
-                    .setColor(Colors.Red)
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-    }
+    if (!interaction.member.roles.cache.hasAny(...allowedIDs)) return await interaction.editReply({
+        embeds: [
+            new EmbedBuilder()
+                .setTitle('Access denied.')
+                .setDescription('You do not have the required permissions to use this command.')
+                .setColor(Colors.Red)
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                })
+        ]
+    });
 
     const subcommand = interaction.options.getSubcommand();
     const logChannel = await interaction.guild.channels.cache.get('1332780824952836188');
     const user = interaction.options.getMember('user', true);
 
-    if (!user) {
-        return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setTitle('Error')
-                    .setColor(Colors.Red)
-                    .setDescription(`${user} is not a member of this server.`)
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-    }
+    if (!user) return await interaction.editReply({
+        embeds: [
+            new EmbedBuilder()
+                .setTitle('Error.')
+                .setColor(Colors.Red)
+                .setDescription(`${user} is not a member of this server.`)
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                })
+        ]
+    });
 
     const reason = interaction.options.getString('reason', true);
 
@@ -82,7 +79,7 @@ export async function execute(interaction) {
         const duration = interaction.options.getString('duration', true);
         const userEmbed = new EmbedBuilder()
             .setColor(Colors.Red)
-            .setTitle('Blacklist issued')
+            .setTitle('Blacklist issued.')
             .setDescription('You have been blacklisted from applying for the Chaos Forces Alliance.')
             .setFields(
                 { name: 'Reason', value: reason },
@@ -96,7 +93,7 @@ export async function execute(interaction) {
             });
         const logEmbed = new EmbedBuilder()
             .setColor(Colors.Red)
-            .setTitle('Blacklist issued')
+            .setTitle('Blacklist issued.')
             .setDescription(`${interaction.user} has issued an applications blacklist to ${user}.`)
             .setFields(
                 { name: 'Reason', value: reason },
@@ -110,25 +107,16 @@ export async function execute(interaction) {
             });
 
         await user.roles.add('1258820500046741524');
-
-        try {
-            await user.send({ embeds: [userEmbed] });
-            await logChannel.send({ embeds: [logEmbed] });
-        } catch (error) {
-            if (error.code === 50007) {
-                await logChannel.send({
-                    content: '## ⚠️ Unable to DM the user about the blacklist. Please inform them manually.',
-                    embeds: [logEmbed]
-                });
-            }
-        }
+        await user.send({ embeds: [userEmbed] })
+            .catch(async _ => await logChannel.send({ content: '## ⚠️ Unable to DM the user about the blacklist. Please inform them manually.' }));
+        await logChannel.send({ embeds: [logEmbed] });
 
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
                     .setColor(Colors.Green)
-                    .setTitle('Success')
-                    .setDescription(`Successfully blacklisted <@${user.id}> from applying.`)
+                    .setTitle('Success.')
+                    .setDescription(`Successfully blacklisted ${user} from applying.`)
                     .addFields(
                         { name: "Reason", value: reason },
                         { name: "Blacklist duration", value: duration }
@@ -143,7 +131,7 @@ export async function execute(interaction) {
     } else if (subcommand === 'remove') {
         const userEmbed = new EmbedBuilder()
             .setColor(Colors.Green)
-            .setTitle('Blacklist removed')
+            .setTitle('Blacklist removed.')
             .setDescription('You have been unblacklisted from applying for the Chaos Forces Alliance.')
             .setThumbnail(interaction.guild.iconURL())
             .setTimestamp()
@@ -154,7 +142,7 @@ export async function execute(interaction) {
 
         const logEmbed = new EmbedBuilder()
             .setColor(Colors.Green)
-            .setTitle('Blacklist removed')
+            .setTitle('Blacklist removed.')
             .setDescription(`${interaction.user} has removed an applications blacklist from ${user}.`)
             .setThumbnail(interaction.guild.iconURL())
             .setTimestamp()
@@ -169,28 +157,17 @@ export async function execute(interaction) {
         }
 
         await user.roles.remove('1258820500046741524');
-
-        try {
-            await user.send({ embeds: [userEmbed] });
-            await logChannel.send({ embeds: [logEmbed] });
-        } catch (error) {
-            if (error.code === 50007) {
-                await logChannel.send({
-                    content: '## ⚠️ Unable to DM the user about the blacklist. Please inform them manually.',
-                    embeds: [logEmbed]
-                });
-            }
-        }
+        await user.send({ embeds: [userEmbed] })
+            .catch(async _ => await logChannel.send({ content: '## ⚠️ Unable to DM the user about the blacklist. Please inform them manually.' }));
+        await logChannel.send({ embeds: [logEmbed] });
 
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
                     .setColor(Colors.Green)
-                    .setTitle('Success')
-                    .setDescription(`Successfully unblacklisted <@${user.id}> from applying.`)
-                    .addFields(
-                        { name: "Reason", value: reason ?? 'No reason provided.' }
-                    )
+                    .setTitle('Success.')
+                    .setDescription(`Successfully unblacklisted ${user}.`)
+                    .addFields({ name: "Reason", value: reason ?? 'No reason provided.' })
                     .setTimestamp()
                     .setFooter({
                         text: interaction.guild.name,

@@ -20,53 +20,64 @@ export const data = new SlashCommandBuilder()
         .setName('anonymous')
         .setDescription('(Defaults to TRUE) Should your name be kept unmentioned in the DM headline?')
     );
+
 export async function execute(interaction) {
     await interaction.deferReply();
 
     const allowedIDs = ["1239137720669044766", "1255634139730935860", "1071373709157351464"]; //llasat one is astro
 
-    if (!(interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id))) {
-        return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setTitle('Access denied!')
-                    .setDescription('You do not have the required permissions to use this command!')
-                    .setColor(Colors.Red)
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-    }
+    if (!(interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id))) return await interaction.editReply({
+        embeds: [
+            new EmbedBuilder()
+                .setTitle('Access denied!')
+                .setDescription('You do not have the required permissions to use this command!')
+                .setColor(Colors.Red)
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                })
+        ]
+    });
 
     const user = interaction.options.getMember('member', true);
 
-    if (!user) {
-        return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Red)
-                    .setTitle('Error')
-                    .setDescription(`${user} is not a member of this server.`)
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-    }
-    
+    if (!user) return await interaction.editReply({
+        embeds: [
+            new EmbedBuilder()
+                .setColor(Colors.Red)
+                .setTitle('Error.')
+                .setDescription(`${user} is not a member of this server.`)
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                })
+        ]
+    });
+
     const message = interaction.options.getString('message');
     const attachment = interaction.options.getAttachment('attachment');
+
+    if (!attachment && !message) return await interaction.editReply({
+        embeds: [
+            new EmbedBuilder()
+                .setColor(Colors.Yellow)
+                .setTitle('Error.')
+                .setDescription('Cannot send an empty message.')
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                })
+        ]
+    });
+
     const anonymous = interaction.options.getBoolean('anonymous') ?? true;
-    const dmLogChannel = await interaction.client.channels.cache.get(process.env.DM_LOG_CHANNEL_ID);
+    const dmLogChannel = interaction.client.channels.cache.get(process.env.DM_LOG_CHANNEL_ID);
     const logEmbed = new EmbedBuilder()
         .setColor(Colors.Green)
-        .setTitle('New Direct Message!')
-        .setDescription(`<@${interaction.user.id}> has sent a direct message to <@${user.id}>.\n\n${message}`)
+        .setTitle('New Direct Message.')
         .setTimestamp()
         .setFooter({
             text: interaction.guild.name,
@@ -84,36 +95,33 @@ export async function execute(interaction) {
         });
 
     let author = `.`;
-    if (!anonymous) {
-        author = ` (<@${interaction.user.id}>).`;
+    if (!anonymous) author = ` (${interaction.user}).`;
+
+    let userDesc = `You have received a message from the Chaos Forces Alliance leadership${author}`;
+    let logDesc = `${interaction.user} has sent a direct message to ${user}.`;
+
+    if (attachment) {
+        embedToSend.setImage(attachment.url);
+        logEmbed.setImage(attachment.url);
     }
 
-    if (attachment && !message) {
-        embedToSend
-            .setDescription(`You have received a message from the Chaos Forces Alliance leadership${author}`)
-            .setImage(attachment.url);
-        logEmbed
-            .setDescription(`<@${interaction.user.id}> has sent a direct message to <@${user.id}>.`)
-            .setImage(attachment.url);
-    } else if (!attachment && message) {
-        embedToSend
-            .setDescription(`You have received a message from the Chaos Forces Alliance leadership${author}\n\n${message}`);
-        logEmbed
-            .setDescription(`<@${interaction.user.id}> has sent a direct message to <@${user.id}>.\n\n${message}`);
-    } else if (attachment && message) {
-        embedToSend
-            .setDescription(`You have received a message from the Chaos Forces Alliance leadership${author}\n\n${message}`)
-            .setImage(attachment.url);
-        logEmbed
-            .setDescription(`<@${interaction.user.id}> has sent a direct message to <@${user.id}>.\n\n${message}`)
-            .setImage(attachment.url);
-    } else if (!attachment && !message) {
+    if (message) {
+        userDesc = userDesc.concat(`\n\n${message}`);
+        logDesc = logDesc.concat(`\n\n${message}`);
+    }
+
+    embedToSend.setDescription(userDesc);
+    logEmbed.setDescription(logDesc);
+
+    try {
+        await user.send({ embeds: [embedToSend] });
+    } catch (_) {
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
                     .setColor(Colors.Yellow)
-                    .setTitle('Error.')
-                    .setDescription('Cannot send an empty message.')
+                    .setTitle(`Error.`)
+                    .setDescription(`Cannot send a message to ${user}. This could happen because the user has this bot blocked.`)
                     .setTimestamp()
                     .setFooter({
                         text: interaction.guild.name,
@@ -123,36 +131,14 @@ export async function execute(interaction) {
         });
     }
 
-    try {
-        await user.send({
-            embeds: [embedToSend]
-        });
-    } catch (error) {
-        if (error.code === 50007) {
-            return await interaction.followUp({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(Colors.Yellow)
-                        .setTitle(`Error.`)
-                        .setDescription(`Cannot send a message to <@${user.id}> because the user has this bot blocked.`)
-                        .setTimestamp()
-                        .setFooter({
-                            text: interaction.guild.name,
-                            iconURL: interaction.guild.iconURL()
-                        })
-                ]
-            });
-        }
-    }
-
     await dmLogChannel.send({ embeds: [logEmbed] });
 
-    return await interaction.followUp({
+    return await interaction.editReply({
         embeds: [
             new EmbedBuilder()
                 .setColor(Colors.Green)
                 .setTitle(`Direct message sent.`)
-                .setDescription(`Successfully sent a direct message to <@${user.id}>.`)
+                .setDescription(`Successfully sent a direct message to ${user}.`)
                 .setTimestamp()
                 .setFooter({
                     text: interaction.guild.name,
