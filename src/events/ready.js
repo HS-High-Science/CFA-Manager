@@ -13,9 +13,11 @@ export async function execute(client) {
 
     const cfaTrainingsChannel = client.channels.cache.get('1203320915396530206');
     const hspsChannel = client.channels.cache.get('1317426517302841424');
+    const cfaRaidChannel = client.channels.cache.get('1116696712061394974');
 
     await cfaTrainingsChannel.messages.fetch();
     await hspsChannel.messages.fetch();
+    await cfaRaidChannel.messages.fetch();
 
     while (true) {
         await reminderFunction(client);

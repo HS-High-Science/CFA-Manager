@@ -197,7 +197,10 @@ export async function execute(interaction) {
 - All CF rules apply to the raid, including the ban of any toxicity.`)
                     .setFields(
                         { name: "Raid host", value: `${interaction.user}`, inline: true },
-                        { name: "Raid ID", value: uuid, inline: true }
+                        { name: "Raid ID", value: uuid, inline: true },
+                        { name: '\u200b', value: '\u200b', inline: true },
+                        { name: 'HSPS reactions', value: '0 ✅', inline: true },
+                        { name: 'CFA reactions', value: '0 ✅', inline: true }
                     )
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
@@ -220,7 +223,11 @@ export async function execute(interaction) {
                     .setDescription(`The High Science Intelligence Agency has gotten information from our spies inside Chaos Forces Alliance that they are planning to raid the Classified Underground Facility on **<t:${time}:F>**!
 
 High Science is requesting all available security to react with ✅ to confirm that you are going to deploy on the CPUF when the raid commences and protect the facility at all costs.`)
-                    .setFields({ name: "Raid host", value: `${interaction.user}` })
+                    .setFields(
+                        { name: "Raid host", value: `${interaction.user}` },
+                        { name: 'HSPS reactions', value: '0 ✅', inline: true },
+                        { name: 'CFA reactions', value: '0 ✅', inline: true }
+                    )
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
                     .setFooter({
@@ -238,8 +245,7 @@ High Science is requesting all available security to react with ✅ to confirm t
                 host_id: interaction.user.id,
                 cfa_message_id: message.id,
                 hsps_message_id: hspsMessage.id,
-                raid_date: time,
-                is_concluded: false
+                raid_date: time
             });
 
         return await interaction.editReply({
@@ -568,8 +574,11 @@ Thank you for participating in the raid.`)
         if (raidAtThisTime) return await interaction.editReply({ embeds: [errorEmbed.setDescription('There is already a raid scheduled for this time.')] });
 
         await client.knex("raids")
-            .update({ raid_date: time })
-            .where({ raid_id: raidID });
+            .update({
+                raid_date: time,
+                is_reminded: false
+            })
+            .where('raid_id', raidID);
 
         const msgID = raid.cfa_message_id;
         const msg = await raidChannel.messages.fetch(msgID);

@@ -261,8 +261,7 @@ Breaking any of these rules can land you in a punishment.
                 message_id: message.id,
                 hsps_message_id: hspsMessageId,
                 training_date: time,
-                training_type: type,
-                is_concluded: false
+                training_type: type
             });
 
         return await interaction.editReply({
@@ -522,8 +521,11 @@ We sincerely apologize for any inconvenience that this might have caused.`)
         const msg = await trainingChannel.messages.fetch(msgID);
 
         await client.knex("trainings")
-            .update({ training_date: newTime })
-            .where({ training_id: trainingID });
+            .update({
+                training_date: newTime,
+                is_reminded: false
+            })
+            .where('training_id', trainingID);
 
         const updateEmbed = new EmbedBuilder()
             .setColor(Colors.Blurple)
