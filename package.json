@@ -9,6 +9,12 @@
     "test": "pnpm i && node src/deploy-commands && pm2 start src/index.js && pm2 delete src/index.js",
     "ci": "node . --ci"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HS-High-Science/CFA-Manager.git"
+  },
+  "homepage": "https://github.com/HS-High-Science/CFA-Manager",
+  "contributors": ["Asynchronite", "stolarchukboris"],
   "author": "Asynchronite",
   "license": "AGPLv3",
   "dependencies": {
