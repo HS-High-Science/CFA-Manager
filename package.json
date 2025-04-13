@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/deploy-commands && node .",
-    "test": "npm ci && node deploy-commands && pm2 start index.js && pm2 stop index.js",
+    "test": "pnpm i && node src/deploy-commands && pm2 start src/index.js && pm2 delete src/index.js",
     "ci": "node . --ci"
   },
   "author": "Asynchronite",
