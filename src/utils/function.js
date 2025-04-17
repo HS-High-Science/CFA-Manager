@@ -75,6 +75,41 @@ If you are unable to host it, you can use the \`/raid cancel\` command to cancel
                 .update({ is_reminded: true })
                 .where('raid_id', raid.raid_id);
         }
+        
+        const tryout = await client.knex('stTryouts')
+            .select('*')
+            .where('tryout_date', '>=', now)
+            .andWhere('tryout_date', '<=', tenMinsFromNow)
+            .andWhere('is_concluded', false)
+            .andWhere('is_reminded', false)
+            .first();
+
+        if (tryout) {
+            await reminderChannel.send({
+                allowedMentions: { parse: ['users'] },
+                content: `<@${tryout.host_id}>`,
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Yellow)
+                        .setTitle('Tryout reminder.')
+                        .setDescription(`The Strike Team tryout you have scheduled is starting <t:${tryout.tryout_date}:R>.
+Make sure you are ready to host the tryout.
+
+If you are unable to host it, you can use the \`/st tryouts cancel\` command to cancel and delete this tryout.`)
+                        .setFields({ name: 'Tryout ID', value: tryout.tryout_id })
+                        .setThumbnail(guild.iconURL())
+                        .setTimestamp()
+                        .setFooter({
+                            text: guild.name,
+                            iconURL: guild.iconURL()
+                        })
+                ]
+            });
+
+            await client.knex('stTryouts')
+                .update({ is_reminded: true })
+                .where('tryout_id', tryout.tryout_id);
+        }
     } catch (error) {
         console.error(error);
     }
