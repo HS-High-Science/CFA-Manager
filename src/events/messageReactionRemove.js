@@ -134,6 +134,22 @@ export async function execute(messageReaction, user) {
                 ]
             });
         }
+
+        const tryoutAnns = await client.knex('stTryouts')
+            .select('*')
+            .where('message_id', message.id)
+            .andWhere('is_concluded', false)
+            .first();
+
+        if (tryoutAnns) return await cfaReactionLogsChannel.send({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Red)
+                    .setTitle('ST tryout reaction removed.')
+                    .setDescription(`${user}'s ✅ reaction has been removed from the [ST tryout announcement](${message.url}).`)
+                    .setTimestamp()
+            ]
+        });
     } catch (error) {
         console.error(error);
     }
