@@ -4,9 +4,9 @@ export const name = Events.MessageReactionAdd;
 
 export async function execute(messageReaction, user) {
     try {
-        if (!messageReaction.message.author === messageReaction.client.user) return;
+        if (!(messageReaction.message.author === messageReaction.client.user)) return;
         if (user === messageReaction.client.user) return;
-        if (!messageReaction.emoji.name === '✅') return;
+        if (!(messageReaction.emoji.name === '✅')) return;
 
         const message = messageReaction.message;
         const client = messageReaction.client;
@@ -17,14 +17,13 @@ export async function execute(messageReaction, user) {
             .select('*')
             .where('message_id', message.id)
             .orWhere('hsps_message_id', message.id)
-            .andWhere('training_type', 'jt')
             .andWhere('is_concluded', false)
             .first();
 
-        if (trainingAnns) {
+        if (trainingAnns && trainingAnns.training_type === 'jt') {
             const cfaMessage = await cfaTrainingsChannel.messages.fetch(trainingAnns.message_id);
-            const hspsMessage = await hspsChannel.messages.fetch(trainingAnns.hsps_message_id);
             const cfaReactions = cfaMessage.reactions.resolve('✅').count;
+            const hspsMessage = await hspsChannel.messages.fetch(trainingAnns.hsps_message_id);
             const hspsReactions = hspsMessage.reactions.resolve('✅').count;
 
             const cfaFields = cfaMessage.embeds[0].fields;
@@ -49,7 +48,7 @@ export async function execute(messageReaction, user) {
                 ]
             });
 
-            await hspsMessage.edit({
+            return await hspsMessage.edit({
                 embeds: [
                     new EmbedBuilder()
                         .setColor(hspsMessage.embeds[0].color)
@@ -98,7 +97,7 @@ export async function execute(messageReaction, user) {
                 ]
             });
 
-            await hspsMessage.edit({
+            return await hspsMessage.edit({
                 embeds: [
                     new EmbedBuilder()
                         .setColor(hspsMessage.embeds[0].color)
