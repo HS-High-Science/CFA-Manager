@@ -629,6 +629,7 @@ Please adjust your availability accordingly.`)
                     .setDescription(`The High Science Intelligence Agency has gotten information from our spies inside Chaos Forces Alliance that they are planning to raid the Classified Underground Facility on **<t:${time}:F>**!
 
 High Science is requesting all available security to react with ✅ to confirm that you are going to deploy on the CPUF when the raid commences and protect the facility at all costs.`)
+                    .setFields(hspsRaidMsg.embeds[0].fields)
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp(new Date(hspsRaidMsg.embeds[0].timestamp))
                     .setFooter(hspsRaidMsg.embeds[0].footer)
