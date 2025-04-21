@@ -1,19 +1,25 @@
 {
   "name": "cfa-manager",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "Discord bot that manages the Chaos Forces Alliance.",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node deploy-commands && node .",
-    "test": "npm ci && node deploy-commands && pm2 start index.js && pm2 stop index.js",
+    "start": "node src/deploy-commands && node .",
+    "test": "pnpm i && node src/deploy-commands && pm2 start src/index.js && pm2 delete src/index.js",
     "ci": "node . --ci"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HS-High-Science/CFA-Manager.git"
+  },
+  "homepage": "https://github.com/HS-High-Science/CFA-Manager",
+  "contributors": ["Asynchronite", "stolarchukboris"],
   "author": "Asynchronite",
   "license": "AGPLv3",
   "dependencies": {
     "discord.js": "^14.18.0",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "knex": "^3.1.0",
     "moment": "^2.30.1",
     "moment-duration-format": "^2.3.2",

@@ -133,36 +133,35 @@ export const data = new SlashCommandBuilder()
             .setDescription('View the person\'s raid logs. You can combine this option with raid_id option.')
         )
     );
+
 export async function execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
 
     const client = await interaction.client;
     const allowedIDs = ["1268226274401193984", "1157806062070681600", "846692755496763413", "1066470548399468644", "1248632771900084286"]; // raid hosting perms, something else, lead insurgent, strike team
 
-    if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
-        return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setTitle('Access Denied!')
-                    .setDescription('You do not have the required permissions to use this command!')
-                    .setColor(Colors.Red)
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-    };
+    if (!interaction.member.roles.cache.hasAny(...allowedIDs)) return await interaction.editReply({
+        embeds: [
+            new EmbedBuilder()
+                .setTitle('Access denied.')
+                .setDescription('You do not have the required permissions to use this command.')
+                .setColor(Colors.Red)
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                })
+        ]
+    });
 
     const now = Math.floor(Date.now() / 1000);
     const subcommand = interaction.options.getSubcommand();
     const uuid = crypto.randomUUID();
-    const raidChannel = await interaction.guild.channels.cache.get('1116696712061394974');
-    const hspsRaidChannel = await client.channels.cache.get('1317426517302841424');
+    const raidChannel = interaction.guild.channels.cache.get('1116696712061394974');
+    const hspsRaidChannel = client.channels.cache.get('1317426517302841424');
     const errorEmbed = new EmbedBuilder()
         .setColor(Colors.Yellow)
-        .setTitle('Error!')
+        .setTitle('Error.')
         .setTimestamp()
         .setFooter({
             text: interaction.guild.name,
@@ -172,18 +171,14 @@ export async function execute(interaction) {
     if (subcommand === 'schedule') {
         const time = await interaction.options.getInteger('time', true);
 
-        if (time <= now) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('Raid cannot be scheduled in the past.')] });
-        };
+        if (time <= now) return await interaction.editReply({ embeds: [errorEmbed.setDescription('Raid cannot be scheduled in the past.')] });
 
         const raidAtThisTime = await client.knex('raids')
             .select('*')
             .where('raid_date', time)
             .first();
 
-        if (raidAtThisTime) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('There is already a raid scheduled for this time.')] });
-        };
+        if (raidAtThisTime) return await interaction.editReply({ embeds: [errorEmbed.setDescription('There is already a raid scheduled for this time.')] });
 
         const message = await raidChannel.send({
             allowedMentions: { parse: ["roles"] },
@@ -201,8 +196,11 @@ export async function execute(interaction) {
 - Always listen to the orders of higher ranks. You can talk freely during the raid, but **please do not talk while the host explains the plan.**
 - All CF rules apply to the raid, including the ban of any toxicity.`)
                     .setFields(
-                        { name: "Raid Host", value: `<@${interaction.user.id}>`, inline: true },
-                        { name: "Raid ID", value: `${uuid}`, inline: true }
+                        { name: "Raid host", value: `${interaction.user}`, inline: true },
+                        { name: "Raid ID", value: uuid, inline: true },
+                        { name: '\u200b', value: '\u200b', inline: true },
+                        { name: 'HSPS reactions', value: '0 ✅', inline: true },
+                        { name: 'CFA reactions', value: '0 ✅', inline: true }
                     )
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
@@ -225,7 +223,11 @@ export async function execute(interaction) {
                     .setDescription(`The High Science Intelligence Agency has gotten information from our spies inside Chaos Forces Alliance that they are planning to raid the Classified Underground Facility on **<t:${time}:F>**!
 
 High Science is requesting all available security to react with ✅ to confirm that you are going to deploy on the CPUF when the raid commences and protect the facility at all costs.`)
-                    .setFields({ name: "Raid Host", value: `<@${interaction.user.id}>` })
+                    .setFields(
+                        { name: "Raid host", value: `${interaction.user}` },
+                        { name: 'HSPS reactions', value: '0 ✅', inline: true },
+                        { name: 'CFA reactions', value: '0 ✅', inline: true }
+                    )
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
                     .setFooter({
@@ -243,16 +245,15 @@ High Science is requesting all available security to react with ✅ to confirm t
                 host_id: interaction.user.id,
                 cfa_message_id: message.id,
                 hsps_message_id: hspsMessage.id,
-                raid_date: time,
-                is_concluded: false
+                raid_date: time
             });
 
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
                     .setColor(Colors.Green)
-                    .setTitle('Success!')
-                    .setDescription(`The raid has been successfully scheduled!`)
+                    .setTitle('Success.')
+                    .setDescription(`Successfully scheduled a raid.`)
                     .addFields({ name: "Raid ID", value: `\`\`\`ini\n[ ${uuid} ]\n\`\`\`` })
                     .setTimestamp()
                     .setFooter({
@@ -265,27 +266,17 @@ High Science is requesting all available security to react with ✅ to confirm t
         const raidID = interaction.options.getString('id', true);
         const venueLink = interaction.options.getString('venue_link');
         let desc = ``;
-        if (venueLink) {
-            desc = `\n## Join the raid [here](${venueLink}).`;
-        };
+        if (venueLink) desc = `\n## Join the raid [here](${venueLink}).`;
 
         const raid = await client.knex("raids")
             .select("*")
             .where("raid_id", raidID)
             .first();
 
-        const isConcluded = raid.is_concluded;
-
-        if (!raid) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid with ID \`${raidID}\` has been found in the database.`)] });
-        };
-
-        if (isConcluded === 1) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription(`This raid is already concluded.`)] });
-        };
+        if (!raid || raid.is_concluded) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`Raid with ID \`${raidID}\` is already concluded or does not exist in the database.`)] });
 
         const msgID = raid.cfa_message_id;
-        const raidMsg = await raidChannel.messages.fetch(`${msgID}`);
+        const raidMsg = await raidChannel.messages.fetch(msgID);
 
         await raidMsg.reply({
             allowedMentions: { parse: ["roles"] },
@@ -294,13 +285,13 @@ High Science is requesting all available security to react with ✅ to confirm t
                 new EmbedBuilder()
                     .setColor(Colors.DarkGreen)
                     .setThumbnail(interaction.guild.iconURL())
-                    .setTitle(`Chaos Forces Alliance - Raid Commencing`)
+                    .setTitle(`Chaos Forces Alliance - Raid commencing.`)
                     .setDescription(`A scheduled raid is now commencing. Please ensure that you:
 - STS at the spawn.
-- Have no avatar that massively alters your hit-box.
+- Have no avatar that massively alters your hitboxes.
 - Always listen to the host's instructions.
 - Join the Raid tribune.${desc}`)
-                    .setFields({ name: 'Raid ID', value: `${raidID}` })
+                    .setFields({ name: 'Raid ID', value: raidID })
                     .setTimestamp()
                     .setFooter({
                         text: interaction.guild.name,
@@ -310,7 +301,7 @@ High Science is requesting all available security to react with ✅ to confirm t
         });
 
         const hspsMsgID = raid.hsps_message_id;
-        const hspsRaidMsg = await hspsRaidChannel.messages.fetch(`${hspsMsgID}`);
+        const hspsRaidMsg = await hspsRaidChannel.messages.fetch(hspsMsgID);
 
         await hspsRaidMsg.reply({
             allowedMentions: { parse: ["roles"] },
@@ -320,7 +311,7 @@ High Science is requesting all available security to react with ✅ to confirm t
                     .setColor(Colors.DarkGreen)
                     .setThumbnail(interaction.guild.iconURL())
                     .setTitle(`🚨 CPUF IS UNDER ATTACK 🚨`)
-                    .setDescription(`Chaos Forces is commencing a raid on Classified Part Underground Facility! \nAll available security are to immediately deploy and fight off the attack.${desc}`)
+                    .setDescription(`Chaos Forces Alliance is commencing a raid on Classified Part Underground Facility! \nAll available security are to immediately deploy and fight off the attack.${desc}`)
                     .setTimestamp()
                     .setFooter({
                         text: interaction.guild.name,
@@ -332,8 +323,8 @@ High Science is requesting all available security to react with ✅ to confirm t
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Success!')
-                    .setDescription(`The raid has been successfully started!`)
+                    .setTitle('Success.')
+                    .setDescription(`Successfully started the raid.`)
                     .addFields({ name: "Raid ID", value: `\`\`\`ini\n[ ${raidID} ]\n\`\`\`` })
                     .setColor(Colors.Green)
                     .setTimestamp()
@@ -350,18 +341,15 @@ High Science is requesting all available security to react with ✅ to confirm t
             .select("*")
             .where("raid_id", raidID)
             .first();
-        const isConcluded = raid.is_concluded;
 
-        if (!raid) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid with ID \`${raidID}\` has been found in the database.`)] });
-        };
+        if (!raid || raid.is_concluded) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`Raid with ID \`${raidID}\` is already concluded or does not exist in the database.`)] });
 
-        if (isConcluded === 1) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription(`This raid is already concluded.`)] });
-        };
+        await client.knex("raids")
+            .where("raid_id", raidID)
+            .del();
 
         const msgID = raid.cfa_message_id;
-        const msg = await raidChannel.messages.fetch(`${msgID}`);
+        const msg = await raidChannel.messages.fetch(msgID);
 
         await msg.reply({
             allowedMentions: { parse: ["roles"] },
@@ -369,11 +357,11 @@ High Science is requesting all available security to react with ✅ to confirm t
             embeds: [
                 new EmbedBuilder()
                     .setColor(Colors.Red)
-                    .setTitle('Raid Cancelled!')
+                    .setTitle('Raid cancelled.')
                     .setDescription(`The above raid has been cancelled.
 We sincerely apologize for any inconvenience that this might have caused.`)
                     .setThumbnail(interaction.guild.iconURL())
-                    .addFields({ name: "Reason", value: `${reason}` })
+                    .addFields({ name: "Reason", value: reason })
                     .setTimestamp()
                     .setFooter({
                         text: interaction.guild.name,
@@ -383,7 +371,7 @@ We sincerely apologize for any inconvenience that this might have caused.`)
         });
 
         const hspsMsgID = raid.hsps_message_id;
-        const hspsMsg = await hspsRaidChannel.messages.fetch(`${hspsMsgID}`);
+        const hspsMsg = await hspsRaidChannel.messages.fetch(hspsMsgID);
 
         await hspsMsg.reply({
             allowedMentions: { parse: ["roles"] },
@@ -391,9 +379,9 @@ We sincerely apologize for any inconvenience that this might have caused.`)
             embeds: [
                 new EmbedBuilder()
                     .setColor(Colors.Red)
-                    .setTitle('Raid Cancelled!')
+                    .setTitle('Raid cancelled.')
                     .setDescription(`The High Science Intelligence Agency have gotten new information that Chaos Forces have cancelled their planned raid. \n\nThe CPUF is safe, for now at least...`)
-                    .addFields({ name: "Reason", value: `${reason}` })
+                    .addFields({ name: "Reason", value: reason })
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
                     .setFooter({
@@ -403,15 +391,11 @@ We sincerely apologize for any inconvenience that this might have caused.`)
             ]
         });
 
-        await client.knex("raids")
-            .where("raid_id", raidID)
-            .del();
-
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Success!')
-                    .setDescription(`The raid has been successfully cancelled!`)
+                    .setTitle('Success.')
+                    .setDescription(`Successfully cancelled the raid.`)
                     .setColor(Colors.Green)
                     .setTimestamp()
                     .setFooter({
@@ -427,19 +411,12 @@ We sincerely apologize for any inconvenience that this might have caused.`)
             .where("raid_id", raidID)
             .first();
 
-        if (!raid) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No raid with ID \`${raidID}\` has been found in the database.`)] });
-        };
+        if (!raid || raid.is_concluded) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`Raid with ID \`${raidID}\` is already concluded or does not exist in the database.`)] });
 
-        const isConcluded = raid.is_concluded;
         const msgID = raid.cfa_message_id;
-        const msg = await raidChannel.messages.fetch(`${msgID}`);
+        const msg = await raidChannel.messages.fetch(msgID);
         const hspsMsgID = raid.hsps_message_id;
-        const hspsMsg = await hspsRaidChannel.messages.fetch(`${hspsMsgID}`);
-
-        if (isConcluded === 1) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription(`This raid is already concluded.`)] });
-        };
+        const hspsMsg = await hspsRaidChannel.messages.fetch(hspsMsgID);
 
         await client.knex("raids")
             .update({ is_concluded: true })
@@ -452,8 +429,8 @@ We sincerely apologize for any inconvenience that this might have caused.`)
         switch (outcome) {
             case 'chaos':
                 outcomeEmbed = new EmbedBuilder()
-                    .setTitle('⭐ Raid Concluded - Chaos Forces Victory ⭐')
-                    .setDescription(`The raid has been concluded with a victory of Chaos Forces! \nThe CPUF has been destroyed and the truth about High Science has been revealed. \nThank you for participating in the raid.`)
+                    .setTitle('⭐ Raid concluded - Chaos Forces victory ⭐')
+                    .setDescription(`The raid has been concluded with a victory of Chaos Forces Alliance! \nThe CPUF has been destroyed and the truth about High Science has been revealed. \nThank you for participating in the raid.`)
                     .setColor(Colors.Green)
                     .setTimestamp()
                     .setFooter({
@@ -462,7 +439,7 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                     });
 
                 hspsOutcomeEmbed = new EmbedBuilder()
-                    .setTitle('💀 Raid Concluded - Chaos Forces Victory 💾')
+                    .setTitle('💀 Raid concluded - Chaos Forces victory 💾')
                     .setDescription(`The raid has been concluded, HSPS have lost! \nThe CPUF has been destroyed and the classified data has been breached. \nThank you for participating in the raid.`)
                     .setColor(Colors.Red)
                     .setTimestamp()
@@ -474,7 +451,7 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                 break;
             case 'security':
                 outcomeEmbed = new EmbedBuilder()
-                    .setTitle('🛡️ Raid Concluded - HSPS Victory 🛡️')
+                    .setTitle('🛡️ Raid concluded - HSPS victory 🛡️')
                     .setDescription(`The raid has been concluded, Chaos Forces have lost! \nThe CPUF is now secured and the classified data is safe. \nThank you for participating in the raid.`)
                     .setColor(Colors.Red)
                     .setTimestamp()
@@ -484,7 +461,7 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                     });
 
                 hspsOutcomeEmbed = new EmbedBuilder()
-                    .setTitle('⭐ Raid Concluded - HSPS Victory ⭐')
+                    .setTitle('⭐ Raid concluded - HSPS victory ⭐')
                     .setDescription(`The raid has been concluded with a victory of HSPS! \nThe CPUF is now secured and the classified data is safe. \nThank you for participating in the raid.`)
                     .setColor(Colors.Green)
                     .setTimestamp()
@@ -496,7 +473,7 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                 break;
             case 'stalemate':
                 outcomeEmbed = new EmbedBuilder()
-                    .setTitle('⛓️ Raid Concluded - Stalemate ⛓️')
+                    .setTitle('⛓️ Raid concluded - Stalemate ⛓️')
                     .setDescription(`The raid has been concluded with a stalemate.
 Chaos Forces were able to destroy the facility, but HSPS have managed to protect the data!
 With no data, we cannot reveal the truth about High Science.
@@ -509,7 +486,7 @@ Thank you for participating in the raid.`)
                     });
 
                 hspsOutcomeEmbed = new EmbedBuilder()
-                    .setTitle('⛓️ Raid Concluded - Stalemate ⛓️')
+                    .setTitle('⛓️ Raid concluded - Stalemate ⛓️')
                     .setDescription(`The raid has been concluded with a stalemate.
 HSPS have successfully protected the data, but Chaos Forces have destroyed the facility!
 Even though the facility has been destroyed, the data is secure, rendering Chaos Forces unable to reveal the truth.
@@ -524,7 +501,7 @@ Thank you for participating in the raid.`)
                 break;
             case 'instability':
                 outcomeEmbed = new EmbedBuilder()
-                    .setTitle('🌋 Raid Concluded - ECFR Instability 🌋')
+                    .setTitle('🌋 Raid concluded - ECFR instability 🌋')
                     .setDescription(`The raid has ended as the ECFR has gone unstable.
 The ECFR has entered the thermal runaway state, resulting in loss of stability and detonation!
 Because of that, neither side has won this raid.
@@ -541,7 +518,7 @@ Thank you for participating in the raid.`)
                 break;
             case 'freezedown':
                 outcomeEmbed = new EmbedBuilder()
-                    .setTitle('❄️ Raid Concluded - ECFR Freezedown ❄️')
+                    .setTitle('❄️ Raid concluded - ECFR freezedown ❄️')
                     .setDescription(`The raid has ended with the ECFR freezedown!
 The ECFR temperature has reached a point of no return, after which the reactor has turned into a giant black hole and consumed everything!
 Because of that, neither side has won this raid.
@@ -556,7 +533,7 @@ Thank you for participating in the raid.`)
                 hspsOutcomeEmbed = outcomeEmbed;
 
                 break;
-        };
+        }
 
         await msg.reply({ embeds: [outcomeEmbed] });
         await hspsMsg.reply({ embeds: [hspsOutcomeEmbed] });
@@ -564,8 +541,8 @@ Thank you for participating in the raid.`)
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Success!')
-                    .setDescription('Raid successfully concluded!')
+                    .setTitle('Success.')
+                    .setDescription('Successfully concluded the raid.')
                     .setColor(Colors.Green)
                     .setTimestamp()
                     .setFooter({
@@ -580,36 +557,35 @@ Thank you for participating in the raid.`)
             .select("*")
             .where("raid_id", raidID)
             .first();
+
+        if (!raid || raid.is_concluded) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`Raid with ID \`${raidID}\` is already concluded or does not exist in the database.`)] });
+
         const time = interaction.options.getInteger('new_time', true);
 
-        if (time == raid.raid_date) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('New raid time cannot be the same as the old raid time.')] });
-        }
+        if (time <= now) return await interaction.editReply({ embeds: [errorEmbed.setDescription('Raid cannot be rescheduled to the past.')] });
 
-        if (time <= now) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('Raid cannot be rescheduled to the past.')] });
-        };
+        if (time == raid.raid_date) return await interaction.editReply({ embeds: [errorEmbed.setDescription('New raid time cannot be the same as the old raid time.')] });
 
         const raidAtThisTime = await client.knex('raids')
             .select('*')
             .where('raid_date', time)
             .first();
 
-        if (raidAtThisTime) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('There is already a raid scheduled for this time.')] });
-        };
-
-        const msgID = raid.cfa_message_id;
-        const msg = await raidChannel.messages.fetch(`${msgID}`);
-        const hspsMsgID = raid.hsps_message_id;
-        const hspsRaidMsg = await hspsRaidChannel.messages.fetch(`${hspsMsgID}`);
+        if (raidAtThisTime) return await interaction.editReply({ embeds: [errorEmbed.setDescription('There is already a raid scheduled for this time.')] });
 
         await client.knex("raids")
-            .update({ raid_date: time })
-            .where({ raid_id: raidID });
+            .update({
+                raid_date: time,
+                is_reminded: false
+            })
+            .where('raid_id', raidID);
 
+        const msgID = raid.cfa_message_id;
+        const msg = await raidChannel.messages.fetch(msgID);
+        const hspsMsgID = raid.hsps_message_id;
+        const hspsRaidMsg = await hspsRaidChannel.messages.fetch(hspsMsgID);
         const timeChangeEmbed = new EmbedBuilder()
-            .setTitle('Raid Time Updated')
+            .setTitle('Raid time updated.')
             .setDescription(`The above raid time has been updated, the raid will now be on **<t:${time}:F>**.
 Please adjust your availability accordingly.`)
             .setThumbnail(interaction.guild.iconURL())
@@ -653,6 +629,7 @@ Please adjust your availability accordingly.`)
                     .setDescription(`The High Science Intelligence Agency has gotten information from our spies inside Chaos Forces Alliance that they are planning to raid the Classified Underground Facility on **<t:${time}:F>**!
 
 High Science is requesting all available security to react with ✅ to confirm that you are going to deploy on the CPUF when the raid commences and protect the facility at all costs.`)
+                    .setFields(hspsRaidMsg.embeds[0].fields)
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp(new Date(hspsRaidMsg.embeds[0].timestamp))
                     .setFooter(hspsRaidMsg.embeds[0].footer)
@@ -662,8 +639,8 @@ High Science is requesting all available security to react with ✅ to confirm t
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Success!')
-                    .setDescription('Raid time updated successfully!')
+                    .setTitle('Success.')
+                    .setDescription('Successfully updated the raid time.')
                     .setColor(Colors.Green)
                     .addFields({ name: "Raid ID", value: `\`\`\`ini\n[ ${raidID} ]\n\`\`\`` })
                     .setTimestamp()
@@ -963,7 +940,7 @@ By <@${log.writer_id}> @ <t:${log.log_date}:f>
                             iconURL: interaction.guild.iconURL()
                         })
                 ]
-            })
+            });
         }
     }
 }

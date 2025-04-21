@@ -17,6 +17,7 @@ function formatDuration(duration) {
 export const data = new SlashCommandBuilder()
     .setName('about')
     .setDescription('Get information about this bot.');
+
 export async function execute(interaction) {
     await interaction.deferReply();
 
@@ -28,15 +29,15 @@ export async function execute(interaction) {
             .trim();
     } catch (error) {
         gitHash = 'Unknown.';
-    };
+    }
 
     return await interaction.editReply({
         embeds: [
             new EmbedBuilder()
                 .setColor(Colors.Green)
-                .setTitle('CFA Manager Information')
-                .setDescription('CFA Manager statistics and information. The bot repository can be found [here](https://github.com/AstroHWeston/CFA-Manager).')
-                .setFields([
+                .setTitle('CFA Manager information.')
+                .setDescription('CFA Manager statistics and information. The bot repository can be found [here](https://github.com/HS-High-Science/CFA-Manager).')
+                .setFields(
                     {
                         name: "General Stats",
                         value: `\`\`\`yml\nName: ${interaction.client.user.username}#${interaction.client.user.discriminator}\nID: ${interaction.client.user.id}\`\`\``,
@@ -54,8 +55,8 @@ export async function execute(interaction) {
                     {
                         name: "Build Stats",
                         value: `\`\`\`yml\nCFA Manager: v${packageJSON.version}\nBuild: ${gitHash}\n\`\`\``,
-                    },
-                ])
+                    }
+                )
                 .setTimestamp()
                 .setFooter({
                     text: interaction.guild.name,

@@ -82,26 +82,26 @@ export const data = new SlashCommandBuilder()
             .setRequired(true)
         )
     );
+
 export async function execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
 
     const client = await interaction.client;
     const allowedIDs = ["1208839121682833548"];
-    if (!interaction.member.roles.cache.hasAny(...allowedIDs)) {
-        return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setTitle('Access Denied!')
-                    .setDescription('You do not have the required permissions to use this command!')
-                    .setColor(Colors.Red)
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-    };
+
+    if (!interaction.member.roles.cache.hasAny(...allowedIDs)) return await interaction.editReply({
+        embeds: [
+            new EmbedBuilder()
+                .setTitle('Access denied.')
+                .setDescription('You do not have the required permissions to use this command.')
+                .setColor(Colors.Red)
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                })
+        ]
+    });
 
     const subcommand = interaction.options.getSubcommand();
     const uuid = crypto.randomUUID();
@@ -109,7 +109,7 @@ export async function execute(interaction) {
     const hspsChannel = interaction.client.channels.cache.get('1317426517302841424');
     const errorEmbed = new EmbedBuilder()
         .setColor(Colors.Yellow)
-        .setTitle('Error!')
+        .setTitle('Error.')
         .setTimestamp()
         .setFooter({
             text: interaction.guild.name,
@@ -121,18 +121,14 @@ export async function execute(interaction) {
         const type = interaction.options.getString('type', true);
         let scheduleEmbed;
 
-        if (time <= Math.round(Date.now() / 1000)) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('Cannot schedule a training in the past.')] });
-        };
+        if (time <= Math.round(Date.now() / 1000)) return await interaction.editReply({ embeds: [errorEmbed.setDescription('Cannot schedule a training in the past.')] });
 
         const trainingAtThisTime = await client.knex('trainings')
             .select('*')
             .where('training_date', time)
             .first();
 
-        if (trainingAtThisTime) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('There is already a training scheduled at this time.')] });
-        };
+        if (trainingAtThisTime) return await interaction.editReply({ embeds: [errorEmbed.setDescription('There is already a training scheduled at this time.')] });
 
         switch (type) {
             case 'et':
@@ -147,10 +143,10 @@ Breaking any of these rules can lead to a warning/strike.
 * Do not go AFK or/and leave without notifying the host. Don't worry: disconnecting due to an internet/electricity problem will not get you punished if you notify the host about that issue.
 * Always listen to the orders issued by the host.
 * Use avatars that do not significantly alter your hitboxes.
-* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, <@${interaction.user.id}>.")`)
+* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, ${interaction.user}?")`)
                     .setFields(
-                        { name: "Training Host", value: `<@${interaction.user.id}>`, inline: true },
-                        { name: 'Training ID', value: `${uuid}`, inline: true }
+                        { name: "Training host", value: `${interaction.user}`, inline: true },
+                        { name: 'Training ID', value: uuid, inline: true }
                     )
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
@@ -172,10 +168,10 @@ Breaking any of these rules can lead to a warning/strike.
 * Do not go AFK or/and leave without notifying the host. Don't worry: disconnecting due to an internet/electricity problem will not get you punished if you notify the host about that issue.
 * Always listen to the orders issued by the host.
 * Use avatars that do not significantly alter your hitboxes.
-* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, <@${interaction.user.id}>.")`)
+* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, ${interaction.user}?")`)
                     .setFields(
-                        { name: "Training Host", value: `<@${interaction.user.id}>`, inline: true },
-                        { name: 'Training ID', value: `${uuid}`, inline: true }
+                        { name: "Training host", value: `${interaction.user}`, inline: true },
+                        { name: 'Training ID', value: uuid, inline: true }
                     )
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
@@ -198,10 +194,13 @@ Breaking any of these rules can lead to a warning/strike.
 * Always listen to the orders issued by the host.
 * Do not harass security.
 * Use avatars that do not significantly alter your hitboxes.
-* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, <@${interaction.user.id}>.")`)
+* Do not talk unless allowed to, however, you can ask for a permission (example: "PTS, ${interaction.user}?")`)
                     .setFields(
-                        { name: "Training Host", value: `<@${interaction.user.id}>`, inline: true },
-                        { name: 'Training ID', value: `${uuid}`, inline: true }
+                        { name: "Training host", value: `${interaction.user}`, inline: true },
+                        { name: 'Training ID', value: uuid, inline: true },
+                        { name: '\u200b', value: '\u200b', inline: true },
+                        { name: 'HSPS reactions', value: '0 ✅', inline: true },
+                        { name: 'CFA reactions', value: '0 ✅', inline: true }
                     )
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
@@ -210,8 +209,17 @@ Breaking any of these rules can lead to a warning/strike.
                         iconURL: interaction.guild.iconURL()
                     });
                 break;
-        };
+        }
 
+        const message = await trainingChannel.send({
+            allowedMentions: { parse: ["roles"] },
+            content: "<@&1208467485104406619>",
+            embeds: [scheduleEmbed]
+        });
+
+        await message.react('✅');
+
+        let hspsMessageId;
         if (type === 'jt') {
             const hspsScheduleEmbed = new EmbedBuilder()
                 .setTitle(`An HSPS x CFA Joint Training has been scheduled on <t:${time}:F>. This is in your local time.`)
@@ -223,7 +231,11 @@ Breaking any of these rules can land you in a punishment.
 * Always listen to the orders issued by the host.
 * Use avatars that do not significantly alter your hitboxes.
 * Do not talk unless allowed to, however, you can ask for a permission to speak.`)
-                .setFields({ name: "Training Host", value: `<@${interaction.user.id}>`, inline: true })
+                .setFields(
+                    { name: "Training host", value: `${interaction.user}`, inline: true },
+                    { name: 'HSPS reactions', value: '0 ✅', inline: true },
+                    { name: 'CFA reactions', value: '0 ✅', inline: true }
+                )
                 .setThumbnail(interaction.guild.iconURL())
                 .setTimestamp()
                 .setFooter({
@@ -231,57 +243,32 @@ Breaking any of these rules can land you in a punishment.
                     iconURL: interaction.guild.iconURL()
                 });
 
-            const message = await trainingChannel.send({
-                allowedMentions: { parse: ["roles"] },
-                content: "<@&1208467485104406619>",
-                embeds: [scheduleEmbed]
-            });
-
-            await message.react('✅');
-
             const hspsMessage = await hspsChannel.send({
                 embeds: [hspsScheduleEmbed],
                 allowedMentions: { parse: ['roles'] },
                 content: '<@&1329145116644085790>'
             });
 
+            hspsMessageId = hspsMessage.id;
+
             await hspsMessage.react('✅');
+        }
 
-            await client.knex('trainings')
-                .insert({
-                    training_id: uuid,
-                    host_id: interaction.user.id,
-                    message_id: message.id,
-                    hsps_message_id: hspsMessage.id,
-                    training_date: time,
-                    training_type: type,
-                    is_concluded: false
-                });
-        } else {
-            const message = await trainingChannel.send({
-                allowedMentions: { parse: ["roles"] },
-                content: "<@&1208467485104406619>",
-                embeds: [scheduleEmbed]
+        await client.knex('trainings')
+            .insert({
+                training_id: uuid,
+                host_id: interaction.user.id,
+                message_id: message.id,
+                hsps_message_id: hspsMessageId,
+                training_date: time,
+                training_type: type
             });
-
-            await message.react('✅');
-
-            await client.knex('trainings')
-                .insert({
-                    training_id: uuid,
-                    host_id: interaction.user.id,
-                    message_id: message.id,
-                    training_date: time,
-                    training_type: type,
-                    is_concluded: false
-                });
-        };
 
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Success!')
-                    .setDescription(`The training has been successfully scheduled!`)
+                    .setTitle('Success.')
+                    .setDescription(`Successfully scheduled a training.`)
                     .setFields({ name: 'Training ID', value: `\`\`\`ini\n[ ${uuid} ]\n\`\`\`` })
                     .setColor(Colors.Green)
                     .setTimestamp()
@@ -298,23 +285,16 @@ Breaking any of these rules can land you in a punishment.
             .select("*")
             .where("training_id", trainingID)
             .first();
-        const isConcluded = training.is_concluded;
 
-        if (!training) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No training with ID \`${trainingID}\` has been found in the database.`)] });
-        };
-
-        if (isConcluded === 1) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('This training has already been concluded.')] });
-        };
+        if (!training || training.is_concluded) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`Training with ID \`${trainingID}\` is already concluded or does not exist in the database.`)] });
 
         const msgID = training.message_id;
-        const trainingMsg = await trainingChannel.messages.fetch(`${msgID}`);
+        const trainingMsg = await trainingChannel.messages.fetch(msgID);
         const startEmbed = new EmbedBuilder()
             .setColor(Colors.DarkGreen)
             .setThumbnail(interaction.guild.iconURL())
-            .setTitle('Chaos Forces Alliance - Training Commencing')
-            .setDescription(`A scheduled training is now commencing. Please ensure that you;
+            .setTitle('Chaos Forces Alliance - Training commencing.')
+            .setDescription(`A scheduled training is now commencing. Please ensure that you:
 - STS at the spawn.
 - Listen to host's instructions.
 - Have no avatar that massively alters your hitboxes.
@@ -322,41 +302,35 @@ Breaking any of these rules can land you in a punishment.
 - Show your best!
 
 ## Join the Training [here](${venueLink}).`)
-            .setFields({ name: 'Training ID', value: `${trainingID}` })
+            .setFields({ name: 'Training ID', value: trainingID })
             .setTimestamp()
             .setFooter({
                 text: interaction.guild.name,
                 iconURL: interaction.guild.iconURL()
             });
 
-        if (training.training_type === 'jt') {
-            await trainingMsg.reply({
-                allowedMentions: { parse: ["roles"] },
-                content: '<@&1208467485104406619>',
-                embeds: [startEmbed]
-            });
+        await trainingMsg.reply({
+            allowedMentions: { parse: ["roles"] },
+            content: '<@&1208467485104406619>',
+            embeds: [startEmbed]
+        });
 
+        if (training.training_type === 'jt') {
             const hspsMsgId = training.hsps_message_id;
-            const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
+            const hspsTrainingMsg = await hspsChannel.messages.fetch(hspsMsgId);
 
             await hspsTrainingMsg.reply({
                 allowedMentions: { parse: ["roles"] },
                 content: '<@&1329145116644085790>',
                 embeds: [startEmbed]
             });
-        } else {
-            await trainingMsg.reply({
-                allowedMentions: { parse: ["roles"] },
-                content: '<@&1208467485104406619>',
-                embeds: [startEmbed]
-            });
-        };
+        }
 
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Success!')
-                    .setDescription(`The training has been successfully started!`)
+                    .setTitle('Success.')
+                    .setDescription(`Successfully started the training.`)
                     .setFields({ name: 'Training ID', value: `\`\`\`ini\n[ ${trainingID} ]\n\`\`\`` })
                     .setColor(Colors.Green)
                     .setTimestamp()
@@ -372,27 +346,20 @@ Breaking any of these rules can land you in a punishment.
             .select("*")
             .where("training_id", trainingID)
             .first();
-        const isConcluded = training.is_concluded;
-
-        if (!training) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No training with ID \`${trainingID}\` has been found in the database.`)] });
-        };
-
-        if (isConcluded === 1) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('This training has already been concluded.')] });
-        };
+        
+        if (!training || training.is_concluded) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`Training with ID \`${trainingID}\` is already concluded or does not exist in the database.`)] });
 
         const msgID = training.message_id;
-        const trainingMsg = await trainingChannel.messages.fetch(`${msgID}`);
+        const trainingMsg = await trainingChannel.messages.fetch(msgID);
         const lockEmbed = new EmbedBuilder()
-            .setColor(Colors.Red)
+            .setColor(Colors.Yellow)
             .setThumbnail(interaction.guild.iconURL())
-            .setTitle('Chaos Forces Alliance - Training Locked')
+            .setTitle('Chaos Forces Alliance - Training locked.')
             .setDescription(`A scheduled training has been locked and is now in progress!
-                                
-If you disconnected, please contact the host or co-host to be let back in. 
+
+If you disconnected, please contact the host or co-host to be let back in.
 If you didn't make it in time, **attend another training.**`)
-            .setFields({ name: 'Training ID', value: `${trainingID}` })
+            .setFields({ name: 'Training ID', value: trainingID })
             .setTimestamp()
             .setFooter({
                 text: interaction.guild.name,
@@ -403,16 +370,16 @@ If you didn't make it in time, **attend another training.**`)
 
         if (training.training_type === 'jt') {
             const hspsMsgId = training.hsps_message_id;
-            const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
+            const hspsTrainingMsg = await hspsChannel.messages.fetch(hspsMsgId);
 
             await hspsTrainingMsg.reply({ embeds: [lockEmbed] });
-        };
+        }
 
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Success!')
-                    .setDescription(`The training has been successfully locked!`)
+                    .setTitle('Success.')
+                    .setDescription(`Successfully locked the training.`)
                     .setFields({ name: 'Training ID', value: `\`\`\`ini\n[ ${trainingID} ]\n\`\`\`` })
                     .setColor(Colors.Green)
                     .setTimestamp()
@@ -428,21 +395,14 @@ If you didn't make it in time, **attend another training.**`)
             .select("*")
             .where("training_id", trainingID)
             .first();
-        const isConcluded = training.is_concluded;
 
-        if (!training) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No training with ID \`${trainingID}\` has been found in the database.`)] });
-        };
-
-        if (isConcluded === 1) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('This training has already been concluded.')] });
-        };
+        if (!training || training.is_concluded) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`Training with ID \`${trainingID}\` is already concluded or does not exist in the database.`)] });
 
         const msgID = training.message_id;
-        const msg = await trainingChannel.messages.fetch(`${msgID}`);
+        const msg = await trainingChannel.messages.fetch(msgID);
         const cancelEmbed = new EmbedBuilder()
             .setColor(Colors.Red)
-            .setTitle('Training Cancelled!')
+            .setTitle('Training cancelled.')
             .setDescription(`The above training has been cancelled.
 We sincerely apologize for any inconvenience that this might have caused.`)
             .addFields({ name: "Reason", value: interaction.options.getString("reason", true) })
@@ -453,28 +413,22 @@ We sincerely apologize for any inconvenience that this might have caused.`)
                 iconURL: interaction.guild.iconURL()
             });
 
-        if (training.training_type === 'jt') {
-            await msg.reply({
-                allowedMentions: { parse: ["roles"] },
-                content: '<@&1208467485104406619>',
-                embeds: [cancelEmbed]
-            });
+        await msg.reply({
+            allowedMentions: { parse: ["roles"] },
+            content: '<@&1208467485104406619>',
+            embeds: [cancelEmbed]
+        });
 
+        if (training.training_type === 'jt') {
             const hspsMsgId = training.hsps_message_id;
-            const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
+            const hspsTrainingMsg = await hspsChannel.messages.fetch(hspsMsgId);
 
             await hspsTrainingMsg.reply({
                 allowedMentions: { parse: ["roles"] },
                 content: '<@&1329145116644085790>',
                 embeds: [cancelEmbed]
             });
-        } else {
-            await msg.reply({
-                allowedMentions: { parse: ["roles"] },
-                content: '<@&1208467485104406619>',
-                embeds: [cancelEmbed]
-            });
-        };
+        }
 
         await client.knex("trainings")
             .where("training_id", trainingID)
@@ -483,8 +437,8 @@ We sincerely apologize for any inconvenience that this might have caused.`)
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Success!')
-                    .setDescription(`The training has been successfully cancelled!`)
+                    .setTitle('Success.')
+                    .setDescription(`Successfully cancelled the training.`)
                     .setColor(Colors.Green)
                     .setTimestamp()
                     .setFooter({
@@ -500,17 +454,10 @@ We sincerely apologize for any inconvenience that this might have caused.`)
             .where("training_id", trainingID)
             .first();
 
-        const isConcluded = training.is_concluded;
+        if (!training || training.is_concluded) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`Training with ID \`${trainingID}\` is already concluded or does not exist in the database.`)] });
+
         const msgID = training.message_id;
-        const msg = await trainingChannel.messages.fetch(`${msgID}`);
-
-        if (!training) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No training with ID \`${trainingID}\` has been found in the database.`)] });
-        };
-
-        if (isConcluded === 1) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('This training has already been concluded.')] });
-        };
+        const msg = await trainingChannel.messages.fetch(msgID);
 
         await client.knex("trainings")
             .update({ is_concluded: true })
@@ -518,7 +465,7 @@ We sincerely apologize for any inconvenience that this might have caused.`)
 
         const concludeEmbed = new EmbedBuilder()
             .setColor(Colors.Blurple)
-            .setTitle('Training Concluded')
+            .setTitle('Training concluded.')
             .setDescription(`The above training has been concluded.\nThank you for attending!`)
             .setThumbnail(interaction.guild.iconURL())
             .setTimestamp()
@@ -531,16 +478,16 @@ We sincerely apologize for any inconvenience that this might have caused.`)
 
         if (training.training_type === 'jt') {
             const hspsMsgId = training.hsps_message_id;
-            const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
+            const hspsTrainingMsg = await hspsChannel.messages.fetch(hspsMsgId);
 
             await hspsTrainingMsg.reply({ embeds: [concludeEmbed] });
-        };
+        }
 
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Success!')
-                    .setDescription('Training successfully concluded!')
+                    .setTitle('Success.')
+                    .setDescription('Successfully concluded the training.')
                     .setColor(Colors.Green)
                     .setTimestamp()
                     .setFooter({
@@ -557,46 +504,35 @@ We sincerely apologize for any inconvenience that this might have caused.`)
             .where("training_id", trainingID)
             .first();
 
-        const isConcluded = training.is_concluded;
+        if (!training || training.is_concluded) return await interaction.editReply({ embeds: [errorEmbed.setDescription(`Training with ID \`${trainingID}\` is already concluded or does not exist in the database.`)] });
 
-        if (!training) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription(`No training with ID \`${trainingID}\` has been found in the database.`)] });
-        };
-
-        if (isConcluded === 1) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('This training has already been concluded.')] });
-        };
-
-        if (newTime == training.training_date) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('New training time cannot be the same as the old training time.')] });
-        };
+        if (newTime == training.training_date) return await interaction.editReply({ embeds: [errorEmbed.setDescription('New training time cannot be the same as the old training time.')] });
 
         const trainingAtThisTime = await client.knex('trainings')
             .select('*')
             .where('training_date', newTime)
             .first();
 
-        if (trainingAtThisTime) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('There is already a training scheduled at this time.')] });
-        };
+        if (trainingAtThisTime) return await interaction.editReply({ embeds: [errorEmbed.setDescription('There is already a training scheduled at this time.')] });
 
-        if (newTime <= Math.round(Date.now() / 1000)) {
-            return await interaction.editReply({ embeds: [errorEmbed.setDescription('Cannot reschedule a training to the past.')] });
-        };
+        if (newTime <= Math.round(Date.now() / 1000)) return await interaction.editReply({ embeds: [errorEmbed.setDescription('Cannot reschedule a training to the past.')] });
 
         const msgID = training.message_id;
-        const msg = await trainingChannel.messages.fetch(`${msgID}`);
+        const msg = await trainingChannel.messages.fetch(msgID);
 
         await client.knex("trainings")
-            .update({ training_date: newTime })
-            .where({ training_id: trainingID });
+            .update({
+                training_date: newTime,
+                is_reminded: false
+            })
+            .where('training_id', trainingID);
 
         const updateEmbed = new EmbedBuilder()
             .setColor(Colors.Blurple)
-            .setTitle('Training Time Updated')
+            .setTitle('Training time updated.')
             .setDescription(`The above training's time has been changed. The training will now be on **<t:${newTime}:f>**.
 Please adjust your availability accordingly.`)
-            .setFields({ name: 'Training ID', value: `${trainingID}` })
+            .setFields({ name: 'Training ID', value: trainingID })
             .setThumbnail(interaction.guild.iconURL())
             .setTimestamp()
             .setFooter({
@@ -604,27 +540,28 @@ Please adjust your availability accordingly.`)
                 iconURL: interaction.guild.iconURL()
             });
 
+        await msg.reply({
+            allowedMentions: { parse: ["roles"] },
+            content: '<@&1208467485104406619>',
+            embeds: [updateEmbed]
+        });
+
+        await msg.edit({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(msg.embeds[0].color)
+                    .setTitle(`A CFA x HSPS Joint Training has been scheduled on <t:${newTime}:F>. This is in your local time.`)
+                    .setDescription(msg.embeds[0].description)
+                    .setFields(msg.embeds[0].fields)
+                    .setThumbnail(interaction.guild.iconURL())
+                    .setTimestamp(new Date(msg.embeds[0].timestamp))
+                    .setFooter(msg.embeds[0].footer)
+            ]
+        });
+
         if (training.training_type === 'jt') {
-            await msg.reply({
-                allowedMentions: { parse: ["roles"] },
-                content: '<@&1208467485104406619>',
-                embeds: [updateEmbed]
-            });
-
-            await msg.edit({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(msg.embeds[0].color)
-                        .setTitle(`A CFA x HSPS Joint Training has been scheduled on <t:${newTime}:F>. This is in your local time.`)
-                        .setDescription(msg.embeds[0].description)
-                        .setFields(msg.embeds[0].fields)
-                        .setThumbnail(interaction.guild.iconURL())
-                        .setFooter(msg.embeds[0].footer)
-                ]
-            });
-
             const hspsMsgId = training.hsps_message_id;
-            const hspsTrainingMsg = await hspsChannel.messages.fetch(`${hspsMsgId}`);
+            const hspsTrainingMsg = await hspsChannel.messages.fetch(hspsMsgId);
 
             await hspsTrainingMsg.reply({
                 allowedMentions: { parse: ["roles"] },
@@ -640,34 +577,17 @@ Please adjust your availability accordingly.`)
                         .setDescription(hspsTrainingMsg.embeds[0].description)
                         .setFields(hspsTrainingMsg.embeds[0].fields)
                         .setThumbnail(interaction.guild.iconURL())
+                        .setTimestamp(new Date(hspsTrainingMsg.embeds[0].timestamp))
                         .setFooter(hspsTrainingMsg.embeds[0].footer)
                 ]
             });
-        } else {
-            await msg.reply({
-                allowedMentions: { parse: ["roles"] },
-                content: '<@&1208467485104406619>',
-                embeds: [updateEmbed]
-            });
-
-            await msg.edit({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(msg.embeds[0].color)
-                        .setTitle(`A CFA x HSPS Joint Training has been scheduled on <t:${newTime}:F>. This is in your local time.`)
-                        .setDescription(msg.embeds[0].description)
-                        .setFields(msg.embeds[0].fields)
-                        .setThumbnail(interaction.guild.iconURL())
-                        .setFooter(msg.embeds[0].footer)
-                ]
-            });
-        };
+        }
 
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Success!')
-                    .setDescription('Training successfully updated!')
+                    .setTitle('Success.')
+                    .setDescription('Successfully updated the training.')
                     .setColor(Colors.Green)
                     .setFields({ name: 'Training ID', value: `\`\`\`ini\n[ ${trainingID} ]\n\`\`\`` })
                     .setTimestamp()
@@ -677,5 +597,5 @@ Please adjust your availability accordingly.`)
                     })
             ]
         });
-    };
-};
+    }
+}

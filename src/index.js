@@ -7,7 +7,7 @@ const __dirname = import.meta.dirname;
 
 dotenv.config();
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages] });
 
 client.commands = new Collection();
 const foldersPath = join(__dirname, 'commands');
