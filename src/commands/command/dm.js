@@ -24,13 +24,13 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction) {
     await interaction.deferReply();
 
-    const allowedIDs = ["1239137720669044766", "1255634139730935860", "1071373709157351464"]; //llasat one is astro
+    const allowedIDs = ["1239137720669044766", "1255634139730935860"];
 
-    if (!(interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id))) return await interaction.editReply({
+    if (!(interaction.member.roles.cache.hasAny(...allowedIDs))) return await interaction.editReply({
         embeds: [
             new EmbedBuilder()
-                .setTitle('Access denied!')
-                .setDescription('You do not have the required permissions to use this command!')
+                .setTitle('Access denied.')
+                .setDescription('You do not have the required permissions to use this command.')
                 .setColor(Colors.Red)
                 .setTimestamp()
                 .setFooter({

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, Colors } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, Colors, MessageFlags } from 'discord.js';
 
 export const data = new SlashCommandBuilder()
     .setName('warnings')
@@ -8,7 +8,7 @@ export const data = new SlashCommandBuilder()
         .setDescription('Issue a formal warning to a CFA operative.')
         .addUserOption(option => option
             .setName('member')
-            .setDescription('The server member you want to issue the warning to.')
+            .setDescription('The server member you want to warn.')
             .setRequired(true)
         )
         .addStringOption(option => option
@@ -39,8 +39,7 @@ export const data = new SlashCommandBuilder()
         .setDescription('Fetch the CFA operative\'s formal warnings.')
         .addUserOption(option => option
             .setName('user')
-            .setDescription('The user whose formal warnings you want to fetch.')
-            .setRequired(true)
+            .setDescription('The user whose warnings you want to fetch (default to the user running this command).')
         )
     )
     .addSubcommand(subcommand => subcommand
@@ -54,11 +53,119 @@ export const data = new SlashCommandBuilder()
     );
 
 export async function execute(interaction) {
-    await interaction.deferReply();
+    const subcommand = interaction.options.getSubcommand();
 
-    const allowedIDs = ["1239137720669044766", "1255634139730935860", "1071373709157351464"]; //llasat one is astro
+    if (subcommand === 'fetch' || subcommand === 'fromid') {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    } else await interaction.deferReply();
 
-    if (!(interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id))) return await interaction.editReply({
+    const elevatedAccessIds = ["1239137720669044766", "1255634139730935860"];
+    const warnLogsChannel = interaction.client.channels.cache.get(process.env.WARNING_LOG_CHANNEL_ID);
+
+    if (subcommand === 'fetch') {
+        const user = interaction.options.getUser('user') ?? interaction.user;
+
+        if (user !== interaction.user && !interaction.member.roles.cache.hasAny(...elevatedAccessIds)) return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle('Access denied.')
+                    .setDescription('You do not have the required permissions to view other people\'s formal warnings.')
+                    .setColor(Colors.Red)
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+
+        const warnings = await interaction.client.knex('warns')
+            .select('*')
+            .where('rebel_id', user.id);
+
+        if (warnings.length === 0) return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Grey)
+                    .setTitle('No warnings found.')
+                    .setDescription(`No formal warnings for ${user} have been found in the database.`)
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+
+        let desc = ``;
+        for (const warning of warnings) desc = desc.concat(`- **Warning ID**: ${warning.warning_id}\n  - **Issued on**: <t:${warning.date_issued}:f>\n  - **Reason**: ${warning.reason}\n\n`);
+
+        return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Aqua)
+                    .setTitle(`Warnings found.`)
+                    .setDescription(`Found ${strikes.length} formal warning(s) for ${user}\n\n${desc}`)
+                    .setThumbnail(interaction.guild.iconURL())
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+    } else if (subcommand === 'fromid') {
+        const id = interaction.options.getString('warning_id', true);
+        const warning = await interaction.client.knex('warns')
+            .select('*')
+            .where('warning_id', id)
+            .first();
+
+        if (!warning) return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Grey)
+                    .setTitle('Warning not found.')
+                    .setDescription(`No formal warning with ID \`${id}\` has been found in the database.`)
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+
+        if (interaction.user.id !== strike.rebel_id && !interaction.member.roles.cache.hasAny(...elevatedAccessIds)) return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle('Access denied.')
+                    .setDescription('You do not have the required permissions to view other people\'s formal warnings.')
+                    .setColor(Colors.Red)
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+
+        return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Aqua)
+                    .setTitle('Warning found.')
+                    .setDescription(`Successfully retrieved a formal warning from the database.\n\n- **Warning ID**: ${warning.warning_id}\n  - **Issued on**: <t:${warning.date_issued}:f>\n  - **Reason**: ${warning.reason}`)
+                    .setThumbnail(interaction.guild.iconURL())
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+    }
+
+    if (!(interaction.member.roles.cache.hasAny(...elevatedAccessIds))) return await interaction.editReply({
         embeds: [
             new EmbedBuilder()
                 .setTitle('Access denied.')
@@ -71,9 +178,6 @@ export async function execute(interaction) {
                 })
         ]
     });
-
-    const subcommand = interaction.options.getSubcommand();
-    const warnLogsChannel = interaction.client.channels.cache.get(process.env.WARNING_LOG_CHANNEL_ID);
 
     if (subcommand === 'issue') {
         const user = interaction.options.getMember('member', true);
@@ -150,10 +254,7 @@ export async function execute(interaction) {
                     .setTitle('Warning issued.')
                     .setDescription(`Successfully issued a formal warning to ${user}.`)
                     .setColor(Colors.Green)
-                    .setFields(
-                        { name: 'Reason', value: reason },
-                        { name: 'Warning ID', value: uuid }
-                    )
+                    .setFields({ name: 'Warning ID', value: uuid })
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
                     .setFooter({
@@ -184,7 +285,7 @@ export async function execute(interaction) {
             ]
         });
 
-        const warningReason = warning.reason;
+        const warnReason = warning.reason;
         const userId = warning.rebel_id;
 
         await interaction.client.knex('warns')
@@ -192,10 +293,10 @@ export async function execute(interaction) {
             .where('warning_id', id);
 
         const userEmbed = new EmbedBuilder()
-            .setTitle('Formal warning notice.')
+            .setTitle('Warning notice.')
             .setDescription(`A formal warning with ID \`${id}\` has been removed from your record by CFA Command.`)
             .setColor(Colors.Green)
-            .setFields({ name: 'Original warning reason', value: warningReason })
+            .setFields({ name: 'Original warning reason', value: warnReason })
             .setThumbnail(interaction.guild.iconURL())
             .setTimestamp()
             .setFooter({
@@ -204,10 +305,10 @@ export async function execute(interaction) {
             });
 
         const logEmbed = new EmbedBuilder()
-            .setTitle(`Formal warning removed.`)
+            .setTitle(`Warning removed.`)
             .setDescription(`${interaction.user} has removed a formal warning from <@${userId}>'s record.`)
             .setColor(Colors.Green)
-            .setFields({ name: 'Original warning reason', value: warningReason })
+            .setFields({ name: 'Original warning reason', value: warnReason })
             .setThumbnail(interaction.guild.iconURL())
             .setTimestamp()
             .setFooter({
@@ -220,7 +321,7 @@ export async function execute(interaction) {
             userEmbed.addFields({ name: 'Warning removal reason', value: reason });
         }
 
-        const user = await interaction.client.users.cache.get(userId);
+        const user = interaction.client.users.cache.get(userId);
 
         if (user) await user.send({ embeds: [userEmbed] })
             .catch(async _ => await warnLogsChannel.send({ content: '## ⚠️ Unable to DM the user about the warning. Please inform them manually.' }));
@@ -230,81 +331,9 @@ export async function execute(interaction) {
         return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle('Formal warning removed.')
+                    .setTitle('Warning removed.')
                     .setDescription(`Successfully removed a formal warning from <@${userId}>'s record.`)
                     .setColor(Colors.Green)
-                    .setThumbnail(interaction.guild.iconURL())
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-    } else if (subcommand === 'fetch') {
-        const user = interaction.options.getUser('user', true);
-        const warnings = await interaction.client.knex('warns')
-            .select('*')
-            .where('rebel_id', user.id);
-
-        if (warnings.length === 0) return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Grey)
-                    .setTitle('No warnings found.')
-                    .setDescription(`No formal warnings for ${user} have been found in the database.`)
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-
-        let desc = ``;
-        for (const warning of warnings) desc = desc.concat(`- **Warning ID**: ${warning.warning_id}\n  - **Issued on**: <t:${warning.date_issued}:f>\n  - **Reason**: ${warning.reason}\n\n`);
-
-        return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Aqua)
-                    .setTitle(`Warnings found.`)
-                    .setDescription(`Found ${warnings.length} formal warning(s) for ${user}\n\n${desc}`)
-                    .setThumbnail(interaction.guild.iconURL())
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-    } else if (subcommand === 'fromid') {
-        const id = interaction.options.getString('warning_id', true);
-        const warning = await interaction.client.knex('warns')
-            .select('*')
-            .where('warning_id', id)
-            .first();
-
-        if (!warning) return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Grey)
-                    .setTitle('Warning not found.')
-                    .setDescription(`No formal warning with ID \`${id}\` has been found in the database.`)
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-
-        return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Aqua)
-                    .setTitle('Formal warning found.')
-                    .setDescription(`Successfully retrieved a formal warning from the database.\n\n- **Warning ID**: ${warning.warning_id}\n  - **Issued on**: <t:${warning.date_issued}:f>\n  - **Reason**: ${warning.reason}`)
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
                     .setFooter({
