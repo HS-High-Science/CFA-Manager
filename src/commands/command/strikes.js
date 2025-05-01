@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, Colors } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, Colors, MessageFlags } from 'discord.js';
 
 export const data = new SlashCommandBuilder()
     .setName('strikes')
@@ -39,8 +39,7 @@ export const data = new SlashCommandBuilder()
         .setDescription('Fetch the CFA operative\'s strikes.')
         .addUserOption(option => option
             .setName('user')
-            .setDescription('The user whose strikes you want to fetch.')
-            .setRequired(true)
+            .setDescription('The user whose strikes you want to fetch (default to the user running this command).')
         )
     )
     .addSubcommand(subcommand => subcommand
@@ -54,11 +53,119 @@ export const data = new SlashCommandBuilder()
     );
 
 export async function execute(interaction) {
-    await interaction.deferReply();
+    const subcommand = interaction.options.getSubcommand();
 
-    const allowedIDs = ["1239137720669044766", "1255634139730935860", "1071373709157351464"]; //llasat one is astro
+    if (subcommand === 'fetch' || subcommand === 'fromid') {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    } else await interaction.deferReply();
 
-    if (!(interaction.member.roles.cache.hasAny(...allowedIDs) || allowedIDs.includes(interaction.member.id))) return await interaction.editReply({
+    const elevatedAccessIds = ["1239137720669044766", "1255634139730935860"];
+    const strikeLogsChannel = interaction.client.channels.cache.get(process.env.STRIKE_LOG_CHANNEL_ID);
+
+    if (subcommand === 'fetch') {
+        const user = interaction.options.getUser('user') ?? interaction.user;
+
+        if (user !== interaction.user && !interaction.member.roles.cache.hasAny(...elevatedAccessIds)) return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle('Access denied.')
+                    .setDescription('You do not have the required permissions to view other people\'s strikes.')
+                    .setColor(Colors.Red)
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+
+        const strikes = await interaction.client.knex('strikes')
+            .select('*')
+            .where('rebel_id', user.id);
+
+        if (strikes.length === 0) return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Grey)
+                    .setTitle('No strikes found.')
+                    .setDescription(`No strikes for ${user} have been found in the database.`)
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+
+        let desc = ``;
+        for (const strike of strikes) desc = desc.concat(`- **Strike ID**: ${strike.strike_id}\n  - **Issued on**: <t:${strike.date_issued}:f>\n  - **Reason**: ${strike.reason}\n\n`);
+
+        return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Aqua)
+                    .setTitle(`Strikes found.`)
+                    .setDescription(`Found ${strikes.length} strike(s) for ${user}\n\n${desc}`)
+                    .setThumbnail(interaction.guild.iconURL())
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+    } else if (subcommand === 'fromid') {
+        const id = interaction.options.getString('strike_id', true);
+        const strike = await interaction.client.knex('strikes')
+            .select('*')
+            .where('strike_id', id)
+            .first();
+
+        if (!strike) return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Grey)
+                    .setTitle('Strike not found.')
+                    .setDescription(`No strike with ID \`${id}\` has been found in the database.`)
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+
+        if (interaction.user.id !== strike.rebel_id && !interaction.member.roles.cache.hasAny(...elevatedAccessIds)) return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle('Access denied.')
+                    .setDescription('You do not have the required permissions to view other people\'s strikes.')
+                    .setColor(Colors.Red)
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+
+        return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Aqua)
+                    .setTitle('Strike found.')
+                    .setDescription(`Successfully retrieved a strike from the database.\n\n- **Strike ID**: ${strike.strike_id}\n  - **Issued on**: <t:${strike.date_issued}:f>\n  - **Reason**: ${strike.reason}`)
+                    .setThumbnail(interaction.guild.iconURL())
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+    }
+
+    if (!(interaction.member.roles.cache.hasAny(...elevatedAccessIds))) return await interaction.editReply({
         embeds: [
             new EmbedBuilder()
                 .setTitle('Access denied.')
@@ -71,9 +178,6 @@ export async function execute(interaction) {
                 })
         ]
     });
-
-    const subcommand = interaction.options.getSubcommand();
-    const strikeLogsChannel = interaction.client.channels.cache.get(process.env.STRIKE_LOG_CHANNEL_ID);
 
     if (subcommand === 'issue') {
         const user = interaction.options.getMember('member', true);
@@ -230,78 +334,6 @@ export async function execute(interaction) {
                     .setTitle('Strike removed.')
                     .setDescription(`Successfully removed a strike from <@${userId}>'s record.`)
                     .setColor(Colors.Green)
-                    .setThumbnail(interaction.guild.iconURL())
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-    } else if (subcommand === 'fetch') {
-        const user = interaction.options.getUser('user', true);
-        const strikes = await interaction.client.knex('strikes')
-            .select('*')
-            .where('rebel_id', user.id);
-
-        if (strikes.length === 0) return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Grey)
-                    .setTitle('No strikes found.')
-                    .setDescription(`No strikes for ${user} have been found in the database.`)
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-
-        let desc = ``;
-        for (const strike of strikes) desc = desc.concat(`- **Strike ID**: ${strike.strike_id}\n  - **Issued on**: <t:${strike.date_issued}:f>\n  - **Reason**: ${strike.reason}\n\n`);
-
-        return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Aqua)
-                    .setTitle(`Strikes found.`)
-                    .setDescription(`Found ${strikes.length} strike(s) for ${user}\n\n${desc}`)
-                    .setThumbnail(interaction.guild.iconURL())
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-    } else if (subcommand === 'fromid') {
-        const id = interaction.options.getString('strike_id', true);
-        const strike = await interaction.client.knex('strikes')
-            .select('*')
-            .where('strike_id', id)
-            .first();
-
-        if (!strike) return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Grey)
-                    .setTitle('Strike not found.')
-                    .setDescription(`No strike with ID \`${id}\` has been found in the database.`)
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
-
-        return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Aqua)
-                    .setTitle('Strike found.')
-                    .setDescription(`Successfully retrieved a strike from the database.\n\n- **Strike ID**: ${strike.strike_id}\n  - **Issued on**: <t:${strike.date_issued}:f>\n  - **Reason**: ${strike.reason}`)
                     .setThumbnail(interaction.guild.iconURL())
                     .setTimestamp()
                     .setFooter({

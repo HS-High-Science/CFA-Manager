@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, Colors } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, Colors, MessageFlags } from 'discord.js';
 
 export const data = new SlashCommandBuilder()
     .setName('training')
@@ -84,7 +84,7 @@ export const data = new SlashCommandBuilder()
     );
 
 export async function execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const client = await interaction.client;
     const allowedIDs = ["1208839121682833548"];

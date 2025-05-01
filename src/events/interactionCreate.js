@@ -1,4 +1,4 @@
-import { Events, EmbedBuilder, Colors } from 'discord.js';
+import { Events, EmbedBuilder, Colors, MessageFlags } from 'discord.js';
 
 export const name = Events.InteractionCreate;
 export async function execute(interaction) {
@@ -44,9 +44,9 @@ export async function execute(interaction) {
             });
 
         if (interaction.replied || interaction.deferred) {
-            return await interaction.followUp({ embeds: [embed], ephemeral: true });
+            return await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
         } else {
-            return await interaction.reply({ embeds: [embed], ephemeral: true });
+            return await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
         }
     }
 }

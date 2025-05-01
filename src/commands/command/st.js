@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, Colors } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, Colors, MessageFlags } from 'discord.js';
 
 export const data = new SlashCommandBuilder()
     .setName('st')
@@ -97,7 +97,7 @@ export const data = new SlashCommandBuilder()
     );
 
 export async function execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const allowedIds = ['1257065226403188826']; // strike team leader
     const client = await interaction.client;
