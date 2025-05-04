@@ -39,6 +39,10 @@ export const data = new SlashCommandBuilder()
             .setDescription('The reason behind this action.')
         )
     )
+    .addSubcommand(sc => sc
+        .setName('leaderboard')
+        .setDescription('Show points leaderboard.')
+    )
 
 export async function execute(interaction) {
     await interaction.deferReply();
@@ -57,7 +61,7 @@ export async function execute(interaction) {
 
     if (subcommand === 'fetch') {
         const user = interaction.options.getUser('user') ?? interaction.user;
-        
+
         if (user !== interaction.user && !interaction.member.roles.cache.hasAny(...allowedIds)) return await interaction.editReply({
             embeds: [
                 new EmbedBuilder()
@@ -71,7 +75,7 @@ export async function execute(interaction) {
                     })
             ]
         });
-        
+
         const result = await client.knex('points')
             .select('*')
             .where('discord_id', user.id)
@@ -82,7 +86,7 @@ export async function execute(interaction) {
                 new EmbedBuilder()
                     .setColor(Colors.Blurple)
                     .setTitle('Point stats.')
-                    .setDescription(`${user} has ${result?.amount ?? 0} points.`)
+                    .setDescription(`${user} has ${result?.amount ?? 0} point(s).`)
                     .setThumbnail(user.avatarURL())
                     .setTimestamp()
                     .setFooter({
@@ -91,21 +95,24 @@ export async function execute(interaction) {
                     })
             ]
         });
-    } else if (subcommand === 'alter') {
-        if (!interaction.member.roles.cache.hasAny(...allowedIds)) return await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setTitle('Access denied.')
-                    .setDescription('You do not have the required permissions to use this command.')
-                    .setColor(Colors.Red)
-                    .setTimestamp()
-                    .setFooter({
-                        text: interaction.guild.name,
-                        iconURL: interaction.guild.iconURL()
-                    })
-            ]
-        });
 
+    }
+
+    if (!interaction.member.roles.cache.hasAny(...allowedIds)) return await interaction.editReply({
+        embeds: [
+            new EmbedBuilder()
+                .setTitle('Access denied.')
+                .setDescription('You do not have the required permissions to use this command.')
+                .setColor(Colors.Red)
+                .setTimestamp()
+                .setFooter({
+                    text: interaction.guild.name,
+                    iconURL: interaction.guild.iconURL()
+                })
+        ]
+    });
+
+    if (subcommand === 'alter') {
         const user = interaction.options.getUser('user', true);
         const action = interaction.options.getString('action', true);
         const amount = interaction.options.getInteger('amount', true);
@@ -192,6 +199,27 @@ export async function execute(interaction) {
                         { name: 'After', value: `${newAmount} pts`, inline: true },
                         { name: 'Reason', value: reason ?? 'No reason provided.' }
                     )
+                    .setTimestamp()
+                    .setFooter({
+                        text: interaction.guild.name,
+                        iconURL: interaction.guild.iconURL()
+                    })
+            ]
+        });
+    } else if (subcommand === 'leaderboard') {
+        const points = await client.knex('points')
+            .select('*')
+            .orderBy('amount', 'desc');
+        let desc;
+
+        for (let i = 0; i < points.length; i++) desc = desc.concat(`${i}. <@${points[i].discord_id}>: ${points[i].amount} point(s).\n`);
+
+        return await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Blurple)
+                    .setTitle('Points leaderboard.')
+                    .setDescription(`Here is the points leaderboard for Chaos Forces Alliance.\n\n${desc}`)
                     .setTimestamp()
                     .setFooter({
                         text: interaction.guild.name,
