@@ -2,7 +2,7 @@ import { SlashCommandBuilder, EmbedBuilder, Colors } from 'discord.js';
 
 export const data = new SlashCommandBuilder()
     .setName('dm')
-    .setDescription('Send a direct message to a user.')
+    .setDescription('[COM+] Send a direct message to a user.')
     .addUserOption(option => option
         .setName('member')
         .setDescription('The server member to DM.')

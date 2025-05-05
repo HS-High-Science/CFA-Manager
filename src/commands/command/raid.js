@@ -7,7 +7,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Allows you to interact with a Chaos Forces raid on CPUF')
     .addSubcommand(subCommand => subCommand
         .setName('schedule')
-        .setDescription('Schedule a raid on CPUF')
+        .setDescription('[RH] Schedule a raid on CPUF')
         .addIntegerOption(option => option
             .setName('time')
             .setDescription('The time at which the raid will take place (UNIX)')
@@ -16,7 +16,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subCommand => subCommand
         .setName('start')
-        .setDescription('Start a raid.')
+        .setDescription('[RH] Start a raid.')
         .addStringOption(option => option
             .setName('id')
             .setDescription('The ID of the raid you want to start')
@@ -29,7 +29,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subCommand => subCommand
         .setName('end')
-        .setDescription('End a raid.')
+        .setDescription('[RH] End a raid.')
         .addStringOption(option => option
             .setName('id')
             .setDescription('The ID of the raid that you want to end')
@@ -50,7 +50,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subCommand => subCommand
         .setName('cancel')
-        .setDescription('Cancel a raid.')
+        .setDescription('[RH] Cancel a raid.')
         .addStringOption(option => option
             .setName('id')
             .setDescription('The ID of the raid that you want to cancel')
@@ -64,7 +64,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subCommand => subCommand
         .setName('update')
-        .setDescription('Update the raid information.')
+        .setDescription('[RH] Update the raid information.')
         .addStringOption(option => option
             .setName('id')
             .setDescription('The ID of the raid you want to change')
@@ -78,7 +78,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subCommand => subCommand
         .setName('log_add')
-        .setDescription('Create a raid log for a person.')
+        .setDescription('[RH] Create a raid log for a person.')
         .addStringOption(option => option
             .setName('raid_id')
             .setDescription('The ID of the raid you want to log.')
@@ -96,7 +96,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subCommand => subCommand
         .setName('log_remove')
-        .setDescription('Delete a person\'s raid log.')
+        .setDescription('[RH] Delete a person\'s raid log.')
         .addStringOption(option => option
             .setName('log_id')
             .setDescription('The ID of the log you want to delete.')
@@ -105,7 +105,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subCommand => subCommand
         .setName('log_edit')
-        .setDescription('Edit a person\'s raid log. WARNING: this overwrites the log entirely.')
+        .setDescription('[RH] Edit a person\'s raid log. WARNING: this overwrites the log entirely.')
         .addStringOption(option => option
             .setName('log_id')
             .setDescription('The ID of the log you want to edit. WARNING: this overwrites the log entirely.')
@@ -119,7 +119,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subCommand => subCommand
         .setName('log_view')
-        .setDescription('View the raid log(s). Please use at least one search option.')
+        .setDescription('[RH] View the raid log(s). Please use at least one search option.')
         .addStringOption(option => option
             .setName('log_id')
             .setDescription('View the log by its ID.')
@@ -138,7 +138,7 @@ export async function execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const client = await interaction.client;
-    const allowedIDs = ["1268226274401193984", "1157806062070681600", "846692755496763413", "1066470548399468644", "1248632771900084286"]; // raid hosting perms, something else, lead insurgent, strike team
+    const allowedIDs = ["1157806062070681600"]; // raid hosting perms
 
     if (!interaction.member.roles.cache.hasAny(...allowedIDs)) return await interaction.editReply({
         embeds: [
