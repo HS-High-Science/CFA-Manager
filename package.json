@@ -1,6 +1,6 @@
 {
   "name": "cfa-manager",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "Discord bot that manages the Chaos Forces Alliance.",
   "main": "src/index.js",
   "type": "module",
