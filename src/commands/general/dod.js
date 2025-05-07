@@ -54,7 +54,7 @@ export async function execute(interaction) {
             new EmbedBuilder()
                 .setColor(Colors.Green)
                 .setTitle('Requirements possibly met.')
-                .setDescription(`The following HSPS members that suit the Door of Dread requirements are currently on-duty:
+                .setDescription(`The following HSPS members that suit the Door of Dread requirements *(2 or more Senior Guardsmen+)* are currently on-duty:
 - ${sgPlus.join('\n- ')}
 
 **Please make sure they are in the server with you before asking for authorization.**`)
