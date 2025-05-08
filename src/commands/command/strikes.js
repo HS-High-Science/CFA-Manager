@@ -5,7 +5,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Allows authorized users to manage CFA operatives\' strikes.')
     .addSubcommand(subcommand => subcommand
         .setName('issue')
-        .setDescription('Issue a strike to a CFA operative.')
+        .setDescription('[COM+] Issue a strike to a CFA operative.')
         .addUserOption(option => option
             .setName('member')
             .setDescription('The server member you want to strike.')
@@ -23,7 +23,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subcommand => subcommand
         .setName('remove')
-        .setDescription('Remove a strike from the CFA operative\'s record.')
+        .setDescription('[COM+] Remove a strike from the CFA operative\'s record.')
         .addStringOption(option => option
             .setName('strike_id')
             .setDescription('ID of the strike you want to remove.')

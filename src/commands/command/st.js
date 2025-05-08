@@ -8,7 +8,7 @@ export const data = new SlashCommandBuilder()
         .setDescription('Manage Strike Team tryouts.')
         .addSubcommand(sc => sc
             .setName('schedule')
-            .setDescription('Schedule a Strike Team tryout.')
+            .setDescription('[STL] Schedule a Strike Team tryout.')
             .addIntegerOption(option => option
                 .setName('time')
                 .setDescription('The time at which the tryout is going to be hosted (UNIX).')
@@ -16,13 +16,13 @@ export const data = new SlashCommandBuilder()
             )
             .addRoleOption(option => option
                 .setName('ping_role')
-                .setDescription('The role to ping for this announcement')
+                .setDescription('The role to ping for this announcement.')
                 .setRequired(true)
             )
         )
         .addSubcommand(sc => sc
             .setName('start')
-            .setDescription('Start a Strike Team tryout.')
+            .setDescription('[STL] Start a Strike Team tryout.')
             .addStringOption(option => option
                 .setName('tryout_id')
                 .setDescription('ID of a tryout to be started.')
@@ -30,7 +30,7 @@ export const data = new SlashCommandBuilder()
             )
             .addRoleOption(option => option
                 .setName('ping_role')
-                .setDescription('The role to ping for this announcement')
+                .setDescription('The role to ping for this announcement.')
                 .setRequired(true)
             )
             .addStringOption(option => option
@@ -40,7 +40,7 @@ export const data = new SlashCommandBuilder()
         )
         .addSubcommand(sc => sc
             .setName('lock')
-            .setDescription('Lock a Strike Team tryout.')
+            .setDescription('[STL] Lock a Strike Team tryout.')
             .addStringOption(option => option
                 .setName('tryout_id')
                 .setDescription('ID of a tryout to be locked.')
@@ -49,7 +49,7 @@ export const data = new SlashCommandBuilder()
         )
         .addSubcommand(sc => sc
             .setName('conclude')
-            .setDescription('Conclude a Strike Team tryout.')
+            .setDescription('[STL] Conclude a Strike Team tryout.')
             .addStringOption(option => option
                 .setName('tryout_id')
                 .setDescription('ID of a tryout to be concluded.')
@@ -58,7 +58,7 @@ export const data = new SlashCommandBuilder()
         )
         .addSubcommand(sc => sc
             .setName('cancel')
-            .setDescription('Cancel a Strike Team tryout.')
+            .setDescription('[STL] Cancel a Strike Team tryout.')
             .addStringOption(option => option
                 .setName('tryout_id')
                 .setDescription('ID of a tryout to be cancelled.')
@@ -71,13 +71,13 @@ export const data = new SlashCommandBuilder()
             )
             .addRoleOption(option => option
                 .setName('ping_role')
-                .setDescription('The role to ping for this announcement')
+                .setDescription('The role to ping for this announcement.')
                 .setRequired(true)
             )
         )
         .addSubcommand(sc => sc
             .setName('update')
-            .setDescription('Update a Strike Team tryout.')
+            .setDescription('[STL] Update a Strike Team tryout.')
             .addStringOption(option => option
                 .setName('tryout_id')
                 .setDescription('ID of a tryout to be updated.')

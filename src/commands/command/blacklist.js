@@ -5,7 +5,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Manage CFA application blacklists.')
     .addSubcommand(subCommand => subCommand
         .setName('issue')
-        .setDescription('Blacklist a person from applying.')
+        .setDescription('[COM+] Blacklist a person from applying.')
         .addUserOption(option => option
             .setName('user')
             .setDescription('The user to be blacklisted.')
@@ -24,7 +24,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subCommand => subCommand
         .setName('remove')
-        .setDescription('Unblacklist a person from applying.')
+        .setDescription('[COM+] Unblacklist a person from applying.')
         .addUserOption(option => option
             .setName('user')
             .setDescription('The user to be unblacklisted.')

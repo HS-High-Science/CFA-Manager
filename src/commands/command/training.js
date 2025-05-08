@@ -5,7 +5,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Allows authorized users to schedule the CFA training.')
     .addSubcommand(subcommand => subcommand
         .setName('schedule')
-        .setDescription('Schedules a training.')
+        .setDescription('[TH] Schedule a training.')
         .addIntegerOption(option => option
             .setName('time')
             .setDescription('The time at which the training will take place.')
@@ -24,7 +24,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subcommand => subcommand
         .setName('start')
-        .setDescription('Starts a training.')
+        .setDescription('[TH] Start a training.')
         .addStringOption(option => option
             .setName('id')
             .setDescription('The ID of the training that you want to start.')
@@ -38,7 +38,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subcommand => subcommand
         .setName('lock')
-        .setDescription('Informs others of training lock.')
+        .setDescription('[TH] Inform others of training lock.')
         .addStringOption(option => option
             .setName('id')
             .setDescription('The ID of the training that you want to lock.')
@@ -47,7 +47,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subcommand => subcommand
         .setName('end')
-        .setDescription('Ends a training.')
+        .setDescription('[TH] End a training.')
         .addStringOption(option => option
             .setName('id')
             .setDescription('The ID of the training that you want to end.')
@@ -56,7 +56,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subcommand => subcommand
         .setName('cancel')
-        .setDescription('Cancels a training.')
+        .setDescription('[TH] Cancel a training.')
         .addStringOption(option => option
             .setName('id')
             .setDescription('The ID of the training that you want to cancel.')
@@ -70,7 +70,7 @@ export const data = new SlashCommandBuilder()
     )
     .addSubcommand(subcommand => subcommand
         .setName('update')
-        .setDescription('Updates the training time.')
+        .setDescription('[TH] Update the training time.')
         .addStringOption(option => option
             .setName('id')
             .setDescription('The ID of the training that you want to update.')
