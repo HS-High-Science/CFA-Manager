@@ -214,7 +214,7 @@ export async function execute(interaction) {
         const points = await client.knex('points')
             .select('*')
             .orderBy('amount', 'desc');
-        let desc;
+        let desc = ``;
 
         for (let i = 0; i < points.length; i++) desc = desc.concat(`${i}. <@${points[i].discord_id}>: ${points[i].amount} point(s).\n`);
 
